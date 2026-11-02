@@ -27,6 +27,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          # Ask the workflow token to create the Pages site (source: GitHub Actions)
+          # when it does not exist yet. This still fails if the token cannot administer Pages.
+          enablement: true
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
