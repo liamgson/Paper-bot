@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Liam's Paper Bot</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Paper Bot">
+<meta name="theme-color" content="#05090b">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" href="data:image/png;base64,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">
+<style>
+:root{--bg:#05090b;--card:#0c1317;--card2:#111b20;--line:#1b2a31;--text:#e9f1f3;--dim:#8ca0a8;--faint:#5b6f77;--green:#22e08a;--red:#ff5c6c;--amber:#ffc24a;--blue:#5ab8ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 40px)}
+.wrap{max-width:520px;margin:0 auto}
+a{color:var(--blue);text-decoration:none}
+.paper{display:block;line-height:1.4;background:#2a210a;border:1px solid #5b4510;color:var(--amber);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700;letter-spacing:.04em}
+.paper span.s{font-weight:500;letter-spacing:0;color:#d9b866}
+.top{display:flex;justify-content:space-between;align-items:center;margin:12px 2px 4px;font-size:13px;color:var(--dim)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;box-shadow:0 0 8px var(--green)}
+.dot.bad{background:var(--red);box-shadow:0 0 8px var(--red)}
+.dot.wait{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.name{font-weight:700;color:var(--text)}
+.bal{margin:6px 2px 0}
+.bal .lbl{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.bal .big{font-size:46px;font-weight:800;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.bal .big .cur{color:var(--green)}
+.bal .big.neg .cur{color:var(--red)}
+.gain{display:flex;gap:10px;align-items:baseline;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.pos{color:var(--green)}.neg{color:var(--red)}.dim{color:var(--dim)}
+.chartbox{position:relative;margin-top:10px;background:linear-gradient(180deg,#0b1317,#080e11);border:1px solid var(--line);border-radius:16px;padding:12px 8px 6px}
+.chartbox svg{display:block;width:100%;height:190px;overflow:visible}
+.pill{position:absolute;transform:translate(-50%,-135%);font-size:10px;font-weight:800;letter-spacing:.04em;padding:3px 7px;border-radius:999px;white-space:nowrap;background:#0d1d16;border:1px solid var(--green);color:var(--green);box-shadow:0 0 10px rgba(34,224,138,.35)}
+.pill.sell{background:#0d1d16}
+.pill.loss{background:#21100f;border-color:var(--red);color:var(--red);box-shadow:0 0 10px rgba(255,92,108,.35)}
+.pill.bought{border-color:var(--blue);color:var(--blue);background:#0b1822;box-shadow:0 0 10px rgba(90,184,255,.3)}
+.axis{position:absolute;left:12px;font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums}
+.empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--dim);text-align:center;padding:20px}
+.seg{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;margin-top:8px}
+.seg button{flex:1;background:none;border:0;color:var(--dim);font-size:12px;font-weight:700;padding:8px 0;border-radius:9px}
+.seg button.on{background:#17262d;color:var(--text)}
+h2{font-size:15px;margin:22px 2px 8px;display:flex;justify-content:space-between;align-items:center}
+h2 .tag{font-size:12px;font-weight:600;color:var(--green)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;min-height:118px;position:relative}
+.card .ic{width:26px;height:26px;color:var(--green)}
+.card .t{font-size:12px;color:var(--dim);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:6px}
+.card .st{font-size:15px;font-weight:700;margin-top:2px}
+.card .sub{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.35}
+.card .ring{position:absolute;right:10px;top:10px;width:52px;height:52px}
+.spin{animation:spin 3s linear infinite;transform-origin:50% 50%}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.4}}
+.list{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.row{padding:12px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .l1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.row .l2{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--dim);margin-top:3px;flex-wrap:wrap}
+.row b{font-variant-numeric:tabular-nums}
+.badge{display:inline-block;font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;margin-right:6px;letter-spacing:.04em}
+.b-buy{background:#0b1822;color:var(--blue)}.b-win{background:#0d2218;color:var(--green)}.b-loss{background:#25100f;color:var(--red)}.b-info{background:#1a1a22;color:var(--dim)}
+.bar{height:6px;border-radius:3px;background:#1a2a30;margin-top:8px;position:relative;overflow:visible}
+.bar i{position:absolute;top:-3px;width:3px;height:12px;border-radius:2px;background:var(--text)}
+.bar u{position:absolute;top:0;bottom:0;border-radius:3px;text-decoration:none}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.stat .k{font-size:11px;color:var(--dim);letter-spacing:.04em}
+.stat .v{font-size:18px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chk span{font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:#0d2218;color:var(--green)}
+.chk span.f{background:#25100f;color:var(--red)}
+.chk span.n{background:#1a1a22;color:var(--dim)}
+.set{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.set label{display:block;font-size:12px;color:var(--dim);margin:10px 0 4px}
+.set input,.set select{width:100%;background:#0a1013;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font-size:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{width:100%;margin-top:12px;background:#17262d;border:1px solid var(--line);color:var(--text);font-weight:700;font-size:15px;padding:12px;border-radius:12px}
+.btn.danger{color:var(--red)}
+.btn.go{color:var(--green)}
+.note{font-size:12.5px;line-height:1.5;color:var(--dim);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}
+.note b{color:var(--text)}
+.note.warn{border-color:#5b4510;background:#1a1507}
+.err{font-size:12px;color:var(--red);margin-top:6px;min-height:14px}
+.tog{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:14px}
+.tog input{width:auto}
+.foot{text-align:center;color:var(--faint);font-size:11px;margin-top:22px}
+</style>
+</head>
+<body><noscript>This app needs JavaScript to run.</noscript>
+<div class="wrap">
+  <div class="paper">PAPER MONEY &mdash; <span class="s">practice only. No real trades, no wallet, no real money.</span></div>
+  <div class="top"><div><span id="dot" class="dot wait"></span><span id="conn">starting…</span></div><div class="name">Liam's Paper Bot</div></div>
+
+  <div class="bal">
+    <div class="lbl">Paper balance</div>
+    <div class="big" id="big"><span class="cur">$</span><span id="bigv">0.00</span></div>
+    <div class="gain"><span id="gAmt">$0.00</span><span id="gPct">0.0%</span><span id="gX" class="dim">1.00x</span></div>
+  </div>
+
+  <div class="chartbox" id="chartbox">
+    <svg id="svg" viewBox="0 0 360 190" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="fillg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" id="fs1" stop-color="#22e08a" stop-opacity=".30"/><stop offset="1" id="fs2" stop-color="#22e08a" stop-opacity="0"/></linearGradient>
+        <filter id="glow" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <line id="base" x1="0" x2="360" y1="0" y2="0" stroke="#2a3b43" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" style="display:none"/>
+      <path id="area" d="" fill="url(#fillg)"/>
+      <path id="line" d="" fill="none" stroke="#22e08a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" filter="url(#glow)" vector-effect="non-scaling-stroke"/>
+    </svg>
+    <div id="pills"></div>
+    <div class="axis" id="axHi" style="top:8px"></div>
+    <div class="axis" id="axLo" style="bottom:10px"></div>
+    <div class="empty" id="chartEmpty" style="display:none">Collecting prices… the line draws itself as live data comes in.</div>
+  </div>
+  <div class="seg" id="ranges"></div>
+
+  <h2>Agents <span class="tag" id="agentsTag">4 running</span></h2>
+  <div class="grid">
+    <div class="card" id="cScan"></div>
+    <div class="card" id="cAna"></div>
+    <div class="card" id="cExe"></div>
+    <div class="card" id="cRisk"></div>
+  </div>
+
+  <h2>Open positions <span class="tag" id="posTag"></span></h2>
+  <div class="list" id="posList"></div>
+
+  <h2>Best setups right now <span class="tag" id="watchTag"></span></h2>
+  <div class="list" id="watchList"></div>
+
+  <h2>Profit and loss</h2>
+  <div class="stats" id="stats"></div>
+
+  <h2>Activity</h2>
+  <div class="list" id="feed"></div>
+
+  <h2>Settings</h2>
+  <div class="set">
+    <div class="seg" style="margin-top:0" id="modeSeg"></div>
+    <div class="sub dim" id="modeNote" style="font-size:12px;margin-top:6px"></div>
+    <div class="two">
+      <div><label for="size">Buy size (share of cash)</label><select id="size"><option value="10">10%</option><option value="20">20%</option><option value="25">25%</option></select></div>
+      <div><label for="maxPos">Most open at once</label><select id="maxPos"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+    </div>
+    <div class="two">
+      <div><label for="platFee">Platform fee % (each side)</label><input id="platFee" type="number" inputmode="decimal" step="0.1" min="0" max="5"></div>
+      <div><label for="netFee">Network fee $ (each trade)</label><input id="netFee" type="number" inputmode="decimal" step="0.01" min="0" max="1"></div>
+    </div>
+    <label for="baseSlip">Lowest slippage % (grows on small pools and bigger trades, up to about 5%)</label>
+    <input id="baseSlip" type="number" inputmode="decimal" step="0.5" min="0" max="10">
+    <div class="tog"><span>Pause buying (selling still guards)</span><input id="paused" type="checkbox"></div>
+    <div class="tog"><span>Keep screen on while open</span><input id="awake" type="checkbox"></div>
+    <label for="startAmt">Starting paper money ($)</label>
+    <input id="startAmt" type="number" inputmode="decimal" step="1" min="1">
+    <div class="err" id="setErr"></div>
+    <button class="btn go" id="applyStart">Restart with this amount</button>
+    <button class="btn danger" id="resetBtn">Reset to $89</button>
+  </div>
+
+  <div class="note warn"><b>Please read.</b> This only trades while the app is open on your screen. When you close it or lock your phone, it stops looking at prices and makes no buys or sells. When you open it again it checks prices right then, so a coin may have gone past the stop in the meantime and sells at the new, worse price.</div>
+  <div class="note"><b>Not checked here:</b> top holder over 4%, wallets holding the same amounts (bundles), and whether the story and socials are real. Those need RugCheck or a look at the coin yourself. The "dip from high" uses prices this app has seen plus DexScreener's 5 minute, 1 hour, 6 hour and 1 day moves, so it is a good guess, not the full chart.</div>
+  <div class="note"><b>How the fake money is treated like real money:</b> each buy and sell pays a platform fee, a small network fee, and slippage (the price moves against you, more on small pools). Cash goes down on a buy and comes back on a sell. Real trades can still fill worse, fail, or get stuck on thin or fake coins. Nothing here is advice or a promise.</div>
+  <div class="foot">Prices from DexScreener's public data. Practice only.<br><span id="ver"></span></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var API='https://api.dexscreener.com';
+var Q=new URLSearchParams(location.search);
+var POLL_MS=Math.max(1,Number(Q.get('poll'))||30)*1000;
+var TP=55, SL=-20, BUY_SCORE=85, KEY='lpb.v1', MAXWATCH=90, MAXCHART=6000;
+var ADDR=/^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+function $(id){return document.getElementById(id);}
+function now(){return Date.now();}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function num(x,d){var n=Number(x);return isFinite(n)?n:(d==null?0:d);}
+
+function defaults(start){
+  start=start||89;
+  return {v:1,start:start,cash:start,size:20,maxPos:4,mode:'strict',platFee:1,netFee:0.1,baseSlip:2,paused:false,awake:false,
+    positions:[],feed:[],chart:[{t:now(),v:start}],watch:[],hi:{},realized:0,feesPaid:0,slipCost:0,wins:0,losses:0,cool:{},created:now(),lastPoll:0,polls:0,trades:0};
+}
+var S;
+try{var raw=localStorage.getItem(KEY);S=raw?JSON.parse(raw):null;}catch(e){S=null;}
+if(!S||S.v!==1){S=defaults();}else{S=Object.assign(defaults(S.start),S);}
+var memOnly=false;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){memOnly=true;}
+}
+
+var LIVE={};      // address -> latest numbers from DexScreener
+var PASSN={};     // address -> how many polls in a row it passed
+var SCORES=[];    // latest analyst results
+var ST={ok:null,err:'',busy:false,newCount:0,scanned:0,lastTry:0,lastExe:null,lastRisk:null,buying:false};
+var range='LIVE';
+
+/* ---------- money helpers ---------- */
+function money(n,sign){var a=Math.abs(n);var s='$'+a.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});if(n<0&&a>=0.005)return '-'+s;if(sign&&n>=0.005)return '+'+s;return s;}
+function pct(n,d){var v=num(n);return (v>0.0499?'+':'')+v.toFixed(d==null?1:d)+'%';}
+function price(n){if(!(n>0))return '$0';if(n>=1)return '$'+n.toFixed(2);if(n>=0.01)return '$'+n.toFixed(4);if(n>=0.0001)return '$'+n.toFixed(6);return '$'+n.toPrecision(3);}
+function cap(n){if(n>=1e6)return '$'+(n/1e6).toFixed(2)+'M';if(n>=1e3)return '$'+(n/1e3).toFixed(1)+'K';return '$'+Math.round(n);}
+function cls(n){return n>0.004?'pos':(n<-0.004?'neg':'dim');}
+function ago(t){var s=Math.max(0,Math.round((now()-t)/1000));if(s<10)return 'just now';if(s<60)return s+'s ago';var m=Math.round(s/60);if(m<60)return m+'m ago';var h=Math.round(m/60);if(h<48)return h+'h ago';return Math.round(h/24)+'d ago';}
+function clock(t){return new Date(t).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}
+function dex(a){return 'https://dexscreener.com/solana/'+a;}
+
+/* ---------- costs: fees and slippage ---------- */
+function slipPct(usd,liq){
+  var r=usd/Math.max(liq,1);
+  var s=S.baseSlip+Math.min(3,r*1000);          // 2% up to about 5%, worse on small pools
+  if(r>0.01)s+=Math.min(20,(r-0.01)*500);        // a trade that is big for the pool pays much more
+  return s;
+}
+
+/* ---------- network ---------- */
+function getJSON(url,ms){
+  var ctl=('AbortController' in window)?new AbortController():null;
+  var to=setTimeout(function(){if(ctl)ctl.abort();},ms||12000);
+  return fetch(url,{signal:ctl?ctl.signal:undefined,cache:'no-store'}).then(function(r){
+    clearTimeout(to);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  },function(e){clearTimeout(to);throw e;});
+}
+function settle(list){return Promise.all(list.map(function(p){return p.then(function(v){return {ok:true,v:v};},function(e){return {ok:false,e:e};});}));}
+
+function discover(){
+  return settle([getJSON(API+'/token-boosts/latest/v1'),getJSON(API+'/token-profiles/latest/v1')]).then(function(rs){
+    var any=false,added=0;
+    rs.forEach(function(r){
+      if(r.ok&&Array.isArray(r.v)){any=true;
+        r.v.forEach(function(x){
+          if(x&&x.chainId==='solana'&&ADDR.test(x.tokenAddress||'')){
+            if(S.watch.indexOf(x.tokenAddress)<0){S.watch.unshift(x.tokenAddress);added++;}
+          }
+        });
+      }
+    });
+    if(S.watch.length>MAXWATCH)S.watch.length=MAXWATCH;
+    ST.newCount=added;
+    return any;
+  });
+}
+function chunk(a,n){var o=[];for(var i=0;i<a.length;i+=n)o.push(a.slice(i,i+n));return o;}
+function pickBest(pairs,best){
+  pairs.forEach(function(p){
+    if(!p||p.chainId!=='solana'||!p.baseToken||!ADDR.test(p.baseToken.address||''))return;
+    var a=p.baseToken.address,liq=num(p.liquidity&&p.liquidity.usd);
+    if(!best[a]||liq>num(best[a].liquidity&&best[a].liquidity.usd))best[a]=p;
+  });
+}
+function lookup(addrs){
+  var best={};
+  return settle(chunk(addrs,30).map(function(c){return getJSON(API+'/tokens/v1/solana/'+c.join(','));})).then(function(rs){
+    var ok=false;
+    rs.forEach(function(r){if(r.ok&&Array.isArray(r.v)){ok=true;pickBest(r.v,best);}});
+    if(Object.keys(best).length||!rs.every(function(r){return !r.ok||!r.v.length;})) return {ok:ok,best:best};
+    // older lookup as a backup
+    return settle(chunk(addrs,30).map(function(c){return getJSON(API+'/latest/dex/tokens/'+c.join(','));})).then(function(rs2){
+      rs2.forEach(function(r){if(r.ok&&r.v&&Array.isArray(r.v.pairs)){ok=true;pickBest(r.v.pairs,best);}});
+      return {ok:ok,best:best};
+    });
+  });
+}
+function rec(p){
+  var px=parseFloat(p.priceUsd);if(!(px>0))return null;
+  var pc=p.priceChange||{},tx=p.txns||{},h1=tx.h1||{},m5=tx.m5||{};
+  var inf=p.info||{};
+  return {addr:p.baseToken.address,sym:String(p.baseToken.symbol||'?').slice(0,14),px:px,mc:num(p.marketCap||p.fdv),liq:num(p.liquidity&&p.liquidity.usd),
+    c5:pc.m5==null?null:num(pc.m5),c1:pc.h1==null?null:num(pc.h1),c6:pc.h6==null?null:num(pc.h6),c24:pc.h24==null?null:num(pc.h24),
+    b1:num(h1.buys),s1:num(h1.sells),b5:num(m5.buys),s5:num(m5.sells),created:num(p.pairCreatedAt),
+    soc:!!((inf.socials&&inf.socials.length)||(inf.websites&&inf.websites.length)),ts:now()};
+}
+
+/* ---------- Analyst ---------- */
+function rules(){return S.mode==='practice'?{liq:10000,lo:25,hi:60}:{liq:20000,lo:40,hi:50};}
+function factor(c){return c==null?null:1/Math.max(0.001,1+c/100);}
+function analyze(r){
+  var R=rules(),f=[1];
+  [r.c5,r.c1,r.c6,r.c24].forEach(function(c){var x=factor(c);if(x!=null)f.push(x);});
+  var derived=Math.max.apply(null,f);
+  var tracked=S.hi[r.addr]?S.hi[r.addr]/r.px:1;
+  var hiF=Math.max(derived,tracked);
+  var dip=(1-1/hiF)*100, highMc=r.mc*hiF;
+  var tot=r.b1+r.s1, ratio=tot>0?r.b1/tot:0;
+  var checks=[];
+  function add(key,label,max,pass,partial,note){checks.push({key:key,label:label,max:max,pts:pass?max:(partial||0),pass:pass,note:note});}
+  add('liq','Liquidity',20,r.liq>=R.liq,0,cap(r.liq)+' (needs '+cap(R.liq)+')');
+  add('reach','Reached $15K',15,highMc>=15000,0,'high about '+cap(highMc));
+  add('flow','Buys vs sells',15,ratio>=0.45&&tot>=10,0,Math.round(ratio*100)+'% buys last hour');
+  add('dump','No giant dump',15,(r.c1==null||r.c1>-30)&&(r.c5==null||r.c5>-10),0,'1h '+(r.c1==null?'?':pct(r.c1,0))+', 5m '+(r.c5==null?'?':pct(r.c5,0)));
+  add('settle','Settling',10,r.c5!=null&&Math.abs(r.c5)<=5,0,'5m '+(r.c5==null?'?':pct(r.c5,1)));
+  var inR=dip>=R.lo&&dip<=R.hi, near=dip>=R.lo-10&&dip<=R.hi+10;
+  add('dip','Dip from high',25,inR,near?12:0,Math.round(dip)+'% below high (needs '+R.lo+'-'+R.hi+'%)');
+  var score=checks.reduce(function(a,c){return a+c.pts;},0);
+  var need=checks.filter(function(c){return c.key==='liq'||c.key==='dump'||c.key==='dip';}).every(function(c){return c.pass;});
+  return {r:r,score:score,dip:dip,highMc:highMc,checks:checks,eligible:need&&score>=BUY_SCORE};
+}
+
+/* ---------- trading (paper) ---------- */
+function equity(){
+  var v=S.cash;
+  S.positions.forEach(function(p){v+=p.tokens*(p.lastPx||p.refPx);});
+  return v;
+}
+function pushFeed(e){e.t=now();S.feed.unshift(e);if(S.feed.length>250)S.feed.length=250;}
+function buy(a){
+  var r=a.r;
+  var stake=S.cash*S.size/100;
+  if(stake>S.cash)stake=S.cash;
+  if(stake<1.5||stake<S.netFee*4)return false;
+  var slip=slipPct(stake,r.liq);
+  var pf=stake*S.platFee/100, nf=S.netFee;
+  var invest=stake-pf-nf;
+  if(invest<=0)return false;
+  var fill=r.px*(1+slip/100);
+  var tokens=invest/fill;
+  var slipUsd=tokens*(fill-r.px);
+  S.cash-=stake; S.feesPaid+=pf+nf; S.slipCost+=slipUsd; S.trades++;
+  S.positions.push({addr:r.addr,sym:r.sym,entry:fill,refPx:r.px,lastPx:r.px,tokens:tokens,stake:stake,feesIn:pf+nf,slipIn:slipUsd,slip:slip,score:a.score,liq:r.liq,t:now()});
+  S.hi[r.addr]=Math.max(S.hi[r.addr]||0,r.px);
+  ST.lastExe={t:now(),sym:r.sym};
+  pushFeed({type:'buy',agent:'Executor',sym:r.sym,addr:r.addr,amt:stake,fees:pf+nf,slip:slip,px:fill,score:a.score,eq:equity()});
+  return true;
+}
+function sell(p,reason,r){
+  var px=r?r.px:(p.lastPx||p.refPx);
+  var liq=r?r.liq:p.liq;
+  var gross=p.tokens*px;
+  var slip=slipPct(gross,liq);
+  var proceeds=p.tokens*px*(1-slip/100);
+  var pf=proceeds*S.platFee/100, nf=S.netFee;
+  var net=Math.max(0,proceeds-pf-nf);
+  var pnl=net-p.stake;
+  S.cash+=net; S.feesPaid+=pf+nf; S.slipCost+=p.tokens*px*slip/100; S.realized+=pnl; S.trades++;
+  if(pnl>0)S.wins++;else S.losses++;
+  S.positions=S.positions.filter(function(q){return q!==p;});
+  S.cool[p.addr]=now()+60*60*1000;
+  ST.lastRisk={t:now(),sym:p.sym,reason:reason,pnl:pnl};
+  pushFeed({type:'sell',agent:'Risk',sym:p.sym,addr:p.addr,reason:reason,amt:net,pnl:pnl,pct:pnl/p.stake*100,slip:slip,fees:pf+nf,px:px*(1-slip/100),eq:equity()});
+}
+function sellEstimate(p){
+  var px=p.lastPx||p.refPx,liq=(LIVE[p.addr]&&LIVE[p.addr].liq)||p.liq;
+  var gross=p.tokens*px,slip=slipPct(gross,liq);
+  var proceeds=gross*(1-slip/100);
+  return Math.max(0,proceeds-proceeds*S.platFee/100-S.netFee);
+}
+
+function trade(){
+  // Risk first
+  S.positions.slice().forEach(function(p){
+    var r=LIVE[p.addr];
+    if(!r||now()-r.ts>20000)return;           // no fresh price this round
+    p.lastPx=r.px;p.liq=r.liq;
+    var ret=(r.px/p.entry-1)*100;
+    if(ret>=TP)sell(p,'Took profit',r);
+    else if(ret<=SL)sell(p,'Stop loss',r);
+    else if(r.liq<1500)sell(p,'Pool almost empty',r);
+  });
+  // Analyst
+  SCORES=[];
+  Object.keys(LIVE).forEach(function(a){
+    var r=LIVE[a];
+    if(now()-r.ts>20000||!(r.mc>0))return;
+    S.hi[a]=Math.max(S.hi[a]||0,r.px);
+    var z=analyze(r);SCORES.push(z);
+    PASSN[a]=z.eligible?(PASSN[a]||0)+1:0;
+  });
+  SCORES.sort(function(x,y){return y.score-x.score||y.r.liq-x.r.liq;});
+  // Executor
+  ST.buying=false;
+  if(S.paused)return;
+  SCORES.forEach(function(z){
+    var a=z.r.addr;
+    if(!z.eligible||PASSN[a]<2)return;                       // must pass two polls in a row
+    if(S.positions.length>=S.maxPos)return;
+    if(S.positions.some(function(p){return p.addr===a;}))return;
+    if(S.cool[a]&&S.cool[a]>now())return;
+    ST.buying=true;
+    buy(z);
+  });
+}
+
+/* ---------- poll loop ---------- */
+var timer=null;
+function poll(){
+  if(ST.busy)return Promise.resolve();
+  ST.busy=true;ST.lastTry=now();
+  return discover().catch(function(){return false;}).then(function(found){
+    var addrs=S.watch.slice();
+    S.positions.forEach(function(p){if(addrs.indexOf(p.addr)<0)addrs.push(p.addr);});
+    ST.scanned=addrs.length;
+    if(!addrs.length)throw new Error('No coins found yet');
+    return lookup(addrs);
+  }).then(function(res){
+    if(!res.ok)throw new Error('DexScreener did not answer');
+    var seen=0;
+    Object.keys(res.best).forEach(function(a){var r=rec(res.best[a]);if(r){LIVE[a]=r;seen++;}});
+    if(!seen)throw new Error('No prices came back');
+    ST.ok=true;ST.err='';S.lastPoll=now();S.polls++;
+    trade();
+    S.chart.push({t:now(),v:Math.round(equity()*10000)/10000});
+    if(S.chart.length>MAXCHART){var half=S.chart.slice(0,MAXCHART/2).filter(function(x,i){return i%2===0;});S.chart=half.concat(S.chart.slice(MAXCHART/2));}
+    // forget tracked highs for coins we no longer watch
+    var keep={};S.watch.forEach(function(a){keep[a]=1;});S.positions.forEach(function(p){keep[p.addr]=1;});
+    Object.keys(S.hi).forEach(function(a){if(!keep[a])delete S.hi[a];});
+    save();
+  }).catch(function(e){
+    ST.ok=false;ST.err=(e&&e.name==='AbortError')?'timed out':String((e&&e.message)||e);
+  }).then(function(){ST.busy=false;render();});
+}
+function loop(){
+  clearTimeout(timer);
+  poll().then(function(){timer=setTimeout(loop,POLL_MS);});
+}
+
+/* ---------- chart ---------- */
+var RANGES={LIVE:10*60e3,'1H':3600e3,'4H':4*3600e3,'1D':86400e3,'1W':7*86400e3,'ALL':0};
+function drawChart(){
+  var eq=equity(),tEnd=now(),first=S.chart[0].t;
+  var span=RANGES[range];
+  var tStart=span?tEnd-span:first;
+  tStart=Math.max(tStart,first);
+  if(tEnd-tStart<30000)tStart=tEnd-30000;
+  var pts=S.chart.filter(function(p){return p.t>=tStart;});
+  // include the point just before the window so the line starts at the left edge
+  var idx=S.chart.indexOf(pts[0]);
+  if(idx>0)pts.unshift({t:tStart,v:S.chart[idx-1].v});
+  if(pts.length>260){var step=Math.ceil(pts.length/260),o=[];for(var i=0;i<pts.length;i+=step)o.push(pts[i]);o.push(pts[pts.length-1]);pts=o;}
+  var empty=pts.length<2;
+  $('chartEmpty').style.display=empty?'flex':'none';
+  var up=eq>=S.start-0.004;
+  var col=up?'#22e08a':'#ff5c6c';
+  $('line').setAttribute('stroke',col);$('fs1').setAttribute('stop-color',col);$('fs2').setAttribute('stop-color',col);
+  if(empty){$('line').setAttribute('d','');$('area').setAttribute('d','');$('pills').innerHTML='';$('axHi').textContent='';$('axLo').textContent='';$('base').style.display='none';return;}
+  var vs=pts.map(function(p){return p.v;});
+  var lo=Math.min.apply(null,vs.concat([S.start])),hi=Math.max.apply(null,vs.concat([S.start]));
+  var inView=true;
+  lo=Math.min.apply(null,vs);hi=Math.max.apply(null,vs);
+  if(S.start>=lo&&S.start<=hi){}else inView=false;
+  var padv=(hi-lo)*0.12;if(padv<0.25)padv=0.25;
+  lo-=padv;hi+=padv;
+  function X(t){return (t-tStart)/(tEnd-tStart)*360;}
+  function Y(v){return 180-(v-lo)/(hi-lo)*170;}
+  var d='';pts.forEach(function(p,i){d+=(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1);});
+  var lastX=X(pts[pts.length-1].t);
+  $('line').setAttribute('d',d);
+  $('area').setAttribute('d',d+'L'+lastX.toFixed(1)+' 190L'+X(pts[0].t).toFixed(1)+' 190Z');
+  var b=$('base');if(S.start>lo&&S.start<hi){b.setAttribute('y1',Y(S.start));b.setAttribute('y2',Y(S.start));b.style.display='';}else b.style.display='none';
+  $('axHi').textContent=money(hi);$('axLo').textContent=money(lo);
+  // BOUGHT / SOLD pills at trade points
+  var ev=S.feed.filter(function(e){return (e.type==='buy'||e.type==='sell')&&e.t>=tStart;}).slice(0,5).reverse();
+  var html='';
+  ev.forEach(function(e,i){
+    var x=(e.t-tStart)/(tEnd-tStart)*100;
+    var py=12+Y(e.eq)-(i%2)*20;
+    var left=Math.min(84,Math.max(16,x));
+    var c=e.type==='buy'?'bought':(e.pnl>=0?'sell':'loss');
+    var lab=(e.type==='buy'?'BOUGHT ':'SOLD ')+esc(e.sym.toUpperCase());
+    html+='<div class="pill '+c+'" style="left:'+left.toFixed(1)+'%;top:'+py.toFixed(0)+'px">'+lab+'</div>';
+  });
+  $('pills').innerHTML=html;
+}
+
+/* ---------- render ---------- */
+var shown=null,animStart=0,animFrom=0,animTo=0,animRaf=0;
+function setBalance(v){
+  if(shown==null){shown=v;$('bigv').textContent=v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});return;}
+  if(Math.abs(v-animTo)<0.0001&&animRaf)return;
+  animFrom=shown;animTo=v;animStart=performance.now();
+  cancelAnimationFrame(animRaf);
+  (function step(ts){
+    var k=Math.min(1,(ts-animStart)/700);k=1-Math.pow(1-k,3);
+    shown=animFrom+(animTo-animFrom)*k;
+    $('bigv').textContent=shown.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(k<1)animRaf=requestAnimationFrame(step);else{animRaf=0;shown=animTo;}
+  })(animStart);
+}
+var IC={
+ radar:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><path class="spin" d="M12 12L19 7"/></svg>',
+ flame:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg>',
+ robot:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 16h6"/><circle cx="12" cy="3.5" r="1"/></svg>',
+ shield:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>'
+};
+function ring(score){
+  var c=2*Math.PI*21,off=c*(1-Math.max(0,Math.min(100,score))/100);
+  var col=score>=BUY_SCORE?'#22e08a':(score>=60?'#ffc24a':'#5b6f77');
+  return '<svg class="ring" viewBox="0 0 52 52"><circle cx="26" cy="26" r="21" fill="none" stroke="#1b2a31" stroke-width="5"/><circle cx="26" cy="26" r="21" fill="none" stroke="'+col+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 26 26)"/><text x="26" y="31" text-anchor="middle" font-size="15" font-weight="800" fill="#e9f1f3">'+Math.round(score)+'</text></svg>';
+}
+function render(){
+  var eq=equity(),gain=eq-S.start,gp=gain/S.start*100;
+  setBalance(eq);
+  $('big').className='big'+(gain<-0.004?' neg':'');
+  var g=$('gAmt');g.textContent=(gain>=0.005?'+':'')+money(gain);g.className=cls(gain);
+  var gpEl=$('gPct');gpEl.textContent=pct(gp);gpEl.className=cls(gain);
+  $('gX').textContent=(eq/S.start).toFixed(2)+'x';
+
+  var dot=$('dot'),conn=$('conn'),n=S.positions.length;
+  if(ST.ok===false){dot.className='dot bad';conn.textContent='offline, retrying • '+n+' open position'+(n===1?'':'s');}
+  else if(ST.ok){dot.className='dot';conn.textContent='connected • '+n+' open position'+(n===1?'':'s')+(S.paused?' • buying paused':'');}
+  else{dot.className='dot wait';conn.textContent='connecting…';}
+
+  drawChart();
+
+  // Agents
+  $('cScan').innerHTML=IC.radar+'<div class="t">Scanner</div><div class="st '+(ST.busy?'pulse':'')+'">'+(ST.busy?'Searching…':(ST.ok===false?'Can\'t reach data':'Watching'))+'</div><div class="sub">'+(ST.ok===false?esc(ST.err):ST.scanned+' coins'+(ST.newCount?' • '+ST.newCount+' new':'')+(S.lastPoll?' • updated '+ago(S.lastPoll):''))+'</div>';
+  var top=SCORES.find(function(z){return !S.positions.some(function(p){return p.addr===z.r.addr;});});
+  $('cAna').innerHTML=IC.flame+(top?ring(top.score):'')+'<div class="t">Analyst</div><div class="st">'+(top?esc(top.r.sym):'Scoring…')+'</div><div class="sub">'+(top?'Best score of '+SCORES.length+' coins. '+(top.eligible?'Passes the rules.':'Not a buy yet.'):'Waiting for prices')+'</div>';
+  var exeSt='Waiting',exeSub='No coin passes the rules yet';
+  if(S.paused){exeSt='Paused';exeSub='Buying is paused in Settings';}
+  else if(ST.buying&&now()-(ST.lastExe?ST.lastExe.t:0)<4000){exeSt='Buying…';exeSub='';}
+  else if(ST.lastExe&&now()-ST.lastExe.t<90000){exeSt='Filled';exeSub='Bought '+esc(ST.lastExe.sym)+' '+ago(ST.lastExe.t);}
+  else if(S.positions.length>=S.maxPos){exeSt='Full';exeSub=S.positions.length+' of '+S.maxPos+' positions open';}
+  else if(S.cash<1.5){exeSt='Out of cash';exeSub='Nothing left to buy with';}
+  $('cExe').innerHTML=IC.robot+'<div class="t">Executor</div><div class="st '+(exeSt==='Buying…'?'pulse':'')+'">'+exeSt+'</div><div class="sub">'+exeSub+'<br>Buys '+S.size+'% of cash, up to '+S.maxPos+' coins</div>';
+  var rSt='Guarding',rSub=n+' open';
+  if(ST.lastRisk&&now()-ST.lastRisk.t<90000){rSt=ST.lastRisk.reason;rSub=esc(ST.lastRisk.sym)+' '+money(ST.lastRisk.pnl,true)+' after costs';}
+  $('cRisk').innerHTML=IC.shield+'<div class="t">Risk</div><div class="st">'+esc(rSt)+'</div><div class="sub">'+rSub+'<br>Sells at +'+TP+'% or '+SL+'%</div>';
+  $('agentsTag').textContent='4 running';
+
+  // Positions
+  $('posTag').textContent=n?(n+' of '+S.maxPos):'';
+  var ph='';
+  S.positions.forEach(function(p){
+    var px=p.lastPx||p.refPx,ret=(px/p.entry-1)*100,mark=p.tokens*px,up=mark-p.stake,net=sellEstimate(p)-p.stake;
+    var stop=p.entry*(1+SL/100),tp=p.entry*(1+TP/100);
+    var pos=Math.max(0,Math.min(100,(px-stop)/(tp-stop)*100)),entryPos=(p.entry-stop)/(tp-stop)*100;
+    var stale=LIVE[p.addr]&&now()-LIVE[p.addr].ts>120000;
+    ph+='<div class="row"><div class="l1"><div><a href="'+dex(p.addr)+'" target="_blank" rel="noopener"><b>'+esc(p.sym)+'</b></a> <span class="dim" style="font-size:12px">'+clock(p.t)+' • score '+p.score+'</span></div><div class="'+cls(up)+'"><b>'+money(up,true)+'</b> <span style="font-size:12px">'+pct(ret)+'</span></div></div>'
+      +'<div class="l2"><span>Paid '+money(p.stake)+' → now worth '+money(mark)+'</span><span>Net if sold now '+money(net-0,false)+' ('+money(net-p.stake,true)+')</span></div>'
+      +'<div class="l2"><span>Fill '+price(p.entry)+' • now '+price(px)+(stale?' • price old':'')+'</span><span>Stop '+price(stop)+' • Take profit '+price(tp)+'</span></div>'
+      +'<div class="bar"><u style="left:0;width:'+Math.max(0,Math.min(100,entryPos)).toFixed(1)+'%;background:#2b1417"></u><u style="left:'+Math.max(0,Math.min(100,entryPos)).toFixed(1)+'%;right:0;background:#10281d"></u><i style="left:calc('+pos.toFixed(1)+'% - 1px)"></i></div></div>';
+  });
+  $('posList').innerHTML=ph||'<div class="row dim" style="font-size:13px">Nothing open. The Executor waits for a coin that passes every rule.</div>';
+
+  // Watch list
+  var wl=SCORES.slice(0,6),wh='';
+  wl.forEach(function(z){
+    var chk=z.checks.map(function(c){return '<span class="'+(c.pass?'':'f')+'" title="'+esc(c.note)+'">'+(c.pass?'✓ ':'✗ ')+esc(c.label)+'</span>';}).join('')+'<span class="n">Holders: not checked</span><span class="n">Bundle: not checked</span>';
+    wh+='<div class="row"><div class="l1"><div><a href="'+dex(z.r.addr)+'" target="_blank" rel="noopener"><b>'+esc(z.r.sym)+'</b></a> <span class="dim" style="font-size:12px">'+cap(z.r.mc)+' cap • '+cap(z.r.liq)+' liquidity</span></div><div><b class="'+(z.eligible?'pos':'dim')+'">'+z.score+'/100</b></div></div><div class="l2"><span>'+Math.round(z.dip)+'% below its high'+(z.r.soc?' • has socials listed':' • no socials listed')+'</span></div><div class="chk">'+chk+'</div></div>';
+  });
+  $('watchList').innerHTML=wh||'<div class="row dim" style="font-size:13px">Waiting for the first prices…</div>';
+  $('watchTag').textContent=SCORES.length?(SCORES.filter(function(z){return z.eligible;}).length+' pass'):'';
+
+  // Stats
+  var unreal=0;S.positions.forEach(function(p){unreal+=p.tokens*(p.lastPx||p.refPx)-p.stake;});
+  var sells=S.wins+S.losses;
+  function st(k,v,c){return '<div class="stat"><div class="k">'+k+'</div><div class="v '+(c||'')+'">'+v+'</div></div>';}
+  $('stats').innerHTML=st('Total profit or loss',money(gain,true),cls(gain))+st('Realized (sold)',money(S.realized,true),cls(S.realized))+st('Unrealized (open)',money(unreal,true),cls(unreal))+st('Cash',money(S.cash))
+    +st('Fees paid',money(S.feesPaid))+st('Slippage cost',money(S.slipCost))+st('Wins / losses',S.wins+' / '+S.losses)+st('Win rate',sells?Math.round(S.wins/sells*100)+'%':'-');
+
+  // Feed
+  var fh='';
+  S.feed.slice(0,60).forEach(function(e){
+    var link='<a href="'+dex(e.addr)+'" target="_blank" rel="noopener"><b>'+esc(e.sym)+'</b></a>';
+    if(e.type==='buy'){
+      fh+='<div class="row"><div class="l1"><div><span class="badge b-buy">BOUGHT</span>'+link+'</div><div><b>'+money(e.amt)+'</b></div></div><div class="l2"><span>'+esc(e.agent)+' • '+ago(e.t)+' • fill '+price(e.px)+'</span><span>Costs '+money(e.fees)+' fees, '+e.slip.toFixed(1)+'% slippage</span></div></div>';
+    }else{
+      fh+='<div class="row"><div class="l1"><div><span class="badge '+(e.pnl>=0?'b-win':'b-loss')+'">SOLD</span>'+link+'</div><div class="'+cls(e.pnl)+'"><b>'+money(e.pnl,true)+'</b> <span style="font-size:12px">'+pct(e.pct)+'</span></div></div><div class="l2"><span>'+esc(e.agent)+' • '+esc(e.reason)+' • '+ago(e.t)+'</span><span>Got '+money(e.amt)+' after '+money(e.fees)+' fees, '+e.slip.toFixed(1)+'% slippage</span></div></div>';
+    }
+  });
+  $('feed').innerHTML=fh||'<div class="row dim" style="font-size:13px">No trades yet. Buys and sells show up here.</div>';
+  $('ver').textContent=(memOnly?'Cannot save on this browser. ':'')+'Saved on this phone • '+S.polls+' price checks';
+}
+
+/* ---------- controls ---------- */
+function buildRanges(){
+  $('ranges').innerHTML=Object.keys(RANGES).map(function(k){return '<button data-r="'+k+'" class="'+(k===range?'on':'')+'">'+k+'</button>';}).join('');
+  Array.prototype.forEach.call($('ranges').children,function(b){b.onclick=function(){range=b.getAttribute('data-r');buildRanges();drawChart();};});
+}
+function buildMode(){
+  $('modeSeg').innerHTML=['strict','practice'].map(function(m){return '<button data-m="'+m+'" class="'+(S.mode===m?'on':'')+'">'+(m==='strict'?'Strict (your rules)':'Practice (looser)')+'</button>';}).join('');
+  Array.prototype.forEach.call($('modeSeg').children,function(b){b.onclick=function(){S.mode=b.getAttribute('data-m');PASSN={};save();buildMode();trade();render();};});
+  $('modeNote').textContent=S.mode==='strict'?'Strict: liquidity $20K or more, buy only on a 40-50% dip.':'Practice: liquidity $10K or more, buy on a 25-60% dip, so you see more trades.';
+}
+function fillSettings(){
+  $('size').value=String(S.size);$('maxPos').value=String(S.maxPos);$('platFee').value=S.platFee;$('netFee').value=S.netFee;$('baseSlip').value=S.baseSlip;
+  $('paused').checked=!!S.paused;$('awake').checked=!!S.awake;$('startAmt').value=S.start;
+}
+function bindSettings(){
+  $('size').onchange=function(){S.size=num($('size').value,20);save();render();};
+  $('maxPos').onchange=function(){S.maxPos=Math.max(1,Math.min(4,num($('maxPos').value,4)));save();render();};
+  function numField(id,key,lo,hi){$(id).onchange=function(){var v=Number($(id).value);if(!isFinite(v))v=S[key];S[key]=Math.max(lo,Math.min(hi,v));$(id).value=S[key];save();render();};}
+  numField('platFee','platFee',0,5);numField('netFee','netFee',0,1);numField('baseSlip','baseSlip',0,10);
+  $('paused').onchange=function(){S.paused=$('paused').checked;save();render();};
+  $('awake').onchange=function(){S.awake=$('awake').checked;save();wake();};
+  $('applyStart').onclick=function(){
+    var v=Number($('startAmt').value);
+    if(!isFinite(v)||v<1||v>1000000){$('setErr').textContent='Pick an amount from $1 up. This is pretend money.';return;}
+    if(!confirm('Restart with '+money(v)+' of paper money? Your trades and chart will be cleared.'))return;
+    restart(v);
+  };
+  $('resetBtn').onclick=function(){if(!confirm('Reset to $89 of paper money? Your trades and chart will be cleared.'))return;restart(89);};
+}
+function restart(v){
+  var keep={mode:S.mode,size:S.size,maxPos:S.maxPos,platFee:S.platFee,netFee:S.netFee,baseSlip:S.baseSlip,awake:S.awake,watch:S.watch,hi:S.hi};
+  S=Object.assign(defaults(v),keep);PASSN={};SCORES=[];ST.lastExe=null;ST.lastRisk=null;shown=null;
+  $('setErr').textContent='';save();fillSettings();buildMode();trade();render();
+}
+var lock=null;
+function wake(){
+  try{
+    if(S.awake&&'wakeLock' in navigator&&document.visibilityState==='visible'){navigator.wakeLock.request('screen').then(function(l){lock=l;}).catch(function(){});}
+    else if(!S.awake&&lock){lock.release();lock=null;}
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'){wake();if(now()-S.lastPoll>POLL_MS/2){clearTimeout(timer);loop();}}
+});
+window.addEventListener('error',function(e){ST.err='Page error: '+e.message;});
+
+buildRanges();buildMode();fillSettings();bindSettings();render();
+setInterval(function(){render();},5000);
+window.__lpb={get S(){return S;},get LIVE(){return LIVE;},get SCORES(){return SCORES;},get ST(){return ST;},poll:poll};
+loop();
+})();
+</script>
+</body>
+</html>
