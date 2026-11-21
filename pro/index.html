@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Paper Bot Pro</title>
-<meta name="app-version" content="PAPERBOT-PRO-20261121">
+<meta name="app-version" content="PAPERBOT-PRO-20261121-50">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -72,7 +72,7 @@ a{color:var(--blue);text-decoration:none}
 .dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
 .dots i{width:6px;height:6px;border-radius:50%;background:#3A3A3C}
 .dots i.on{background:#fff}
-.row{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid #1c1c1e}
+.row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #1c1c1e}
 .row:last-child{border-bottom:0}
 .av{position:relative;width:44px;height:44px;flex:none}
 .av .cl{width:44px;height:44px;font-size:16px}
@@ -80,15 +80,16 @@ a{color:var(--blue);text-decoration:none}
 .row .t1{font-size:16px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .t2{font-size:12.5px;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .t3{font-size:12px;color:#C7C7CC;margin-top:2px}
-.row .rt{text-align:right;flex:none}
+.row .rt{text-align:right;flex:none;display:flex;align-items:center;gap:8px}
+.row .nums{text-align:right}
 .row .rt .a{font-size:16px;font-weight:700}
 .row .rt .b{font-size:12.5px;margin-top:2px}
 .lane{font-size:9px;font-weight:800;letter-spacing:.06em;padding:1px 5px;border-radius:5px;margin-left:6px;vertical-align:1px}
 .lane.scalp{color:var(--cyan);background:rgba(50,212,232,.14)}
 .lane.swing{color:var(--yellow);background:rgba(255,214,10,.14)}
-.cbtn{margin-top:6px;background:#2C2C2E;color:#FF453A;border:0;font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px}
-.cbtn:disabled{color:#8E8E93}
-.cbtn.all{margin:0}
+.cbtn{margin:0;background:#3a1513;color:#FF453A;border:1px solid rgba(255,69,58,.55);font-weight:800;font-size:16px;padding:0 14px;min-height:44px;min-width:76px;border-radius:12px;-webkit-tap-highlight-color:transparent}
+.cbtn:disabled{color:#8E8E93;border-color:#2C2C2E;background:#2C2C2E}
+.cbtn.all{min-height:32px;min-width:0;padding:6px 12px;font-size:12px;border-radius:999px;background:#2C2C2E;border:0}
 .cbtn.conf{background:#FF453A;color:#fff}
 .empty2{color:var(--dim);font-size:14px;padding:16px 0;text-align:center;line-height:1.45}
 .card{background:var(--card);border-radius:18px;padding:14px;margin-top:10px}
@@ -209,7 +210,7 @@ a{color:var(--blue);text-decoration:none}
   <input id="startAmt" type="number" inputmode="decimal" min="1" step="1">
   <button class="btn blue" id="applyStart" type="button">Restart with this amount</button>
   <button class="btn danger" id="resetBtn" type="button">Reset to $300</button>
-  <div class="note warn"><b>Why these defaults.</b> A round trip on a Pump.fun coin costs about 2% in pool fees plus a few cents of network, more if the pool is thin. A +15% scalp on a coin that is still trending clears that if a bit more than half of them work. A +48% target after a 40–50% crash usually does not: the stop, the gap, and the occasional rug take more than the winners give back. So scalps are the main lane, size is capped versus both the balance and the pool, and at most two new buys fire per scan. The swing lane stays available because it is your rule. Set "extra app fee" if the phone app you copy charges one. Zero means you are swapping yourself and only the pool fee comes out.</div>
+  <div class="note warn"><b>Why these defaults.</b> Every buy is at least $50, then +$5 after a win, and back to $50 after a loss. The bot never shrinks a buy to fit. If free cash is under the full size, or the size is more than 1% of the pool, that buy is skipped. Five $50 trades fit in a $300 balance, so cash kept back starts at 0% and the balance cap starts at 50% (a $50 buy is about 17% of $300). A +15% scalp still has to clear pool fees. A +48% target after a 40–50% crash usually does not. Set "extra app fee" if the phone app you copy charges one.</div>
   <div class="note"><b>What this cannot make realistic.</b> Prices are DexScreener quotes a few seconds old, so a wick between checks is invisible. There is no private mempool, no sandwich bot racing you, and no true on-chain stop that fills at the trigger price. Honeypots are only caught when RugCheck flags mint, freeze, or a tax. Holder data is missing when RugCheck does not answer, and those coins are not blocked. The dip uses the high this app has seen plus the 5 minute, 1 hour, 6 hour, and 1 day moves, not every candle. The app only trades while this page is open. Nothing here is financial advice.</div>
   <div class="note"><b>Where coins come from.</b> DexScreener's public Solana boost and new-token lists, the same sources as the other simulator. Fomo does not publish its list. This app never reads or writes the other app's saved balance.</div>
   <div class="foot" id="ver"></div>
@@ -217,7 +218,7 @@ a{color:var(--blue);text-decoration:none}
 <script>
 (function(){
 'use strict';
-var VERSION='PAPERBOT-PRO-20261121';
+var VERSION='PAPERBOT-PRO-20261121-50';
 var API='https://api.dexscreener.com';
 var LOC=(typeof location!=='undefined')?location:{search:'',pathname:'/pro/',replace:function(){}};
 var DOC=(typeof document!=='undefined')?document:null;
@@ -243,12 +244,12 @@ function num(x,d){var n=Number(x);return isFinite(n)?n:(d==null?0:d);}
 function setHTML(el,h){if(el&&el.__h!==h){el.innerHTML=h;el.__h=h;}}
 
 var FIELDS=[
-  ['base','First buy ($)',5,200],
+  ['base','First buy ($)',50,500],
   ['step','Add after each win ($)',0,50],
   ['maxPos','Most open at once',1,8],
   ['reservePct','Cash kept back (%)',0,70],
-  ['liqFrac','Max % of pool per trade',0.2,3],
-  ['eqCap','Max % of balance per trade',3,25],
+  ['liqFrac','Skip if over this % of the pool',0.2,3],
+  ['eqCap','Skip if over this % of balance',20,80],
   ['scalpLo','Scalp dip from (%)',3,35],
   ['scalpHi','Scalp dip to (%)',8,45],
   ['scalpTp','Scalp take profit (%)',8,80],
@@ -272,8 +273,8 @@ var FIELDS=[
 function defaults(start){
   start=start||300;
   return {
-    v:1,start:start,cash:start,
-    base:15,step:5,lvl:0,streak:0,maxPos:5,reservePct:20,liqFrac:1,eqCap:12,
+    v:1,rules:2,start:start,cash:start,
+    base:50,step:5,lvl:0,streak:0,maxPos:5,reservePct:0,liqFrac:1,eqCap:50,
     scalpOn:true,swingOn:true,
     scalpLo:4,scalpHi:22,scalpTp:15,scalpSl:8,scalpHold:18,
     swingLo:40,swingHi:50,swingTp:48,swingSl:20,
@@ -290,11 +291,18 @@ var S;
 try{S=JSON.parse(STORE.getItem(KEY)||'null');}catch(e){S=null;}
 if(!S||S.v!==1||typeof S.start!=='number'||!Array.isArray(S.positions)||!Array.isArray(S.chart)||!S.chart.length){S=defaults();}
 else{
-  var keep=S;
+  var keep=S, oldRules=num(keep.rules)||1;
   S=defaults(keep.start);
   Object.keys(keep).forEach(function(k){if(k!=='fx')S[k]=keep[k];});
   S.fx=Object.assign(defaults().fx, keep.fx||{});
   S.v=1;
+  if(oldRules<2){
+    if(num(S.base)<50)S.base=50;
+    if(num(S.eqCap)<50)S.eqCap=50;
+    S.reservePct=0;
+    S.rules=2;
+  }
+  if(num(S.base)<50)S.base=50;
   if(!(S.cash>=0))S.cash=S.start;
   if(!S.chart.length)S.chart=[{t:now(),v:equitySafe()}];
 }
@@ -651,19 +659,20 @@ function pushFeed(e){
   if(S.chart.length>4000) S.chart=S.chart.slice(-2500);
 }
 function pendBuyCost(){return PEND.filter(function(o){return o.k==='buy';}).reduce(function(s,o){return s+num(o.stake);},0);}
-function spendable(){
-  var reserve=equity()*num(S.reservePct)/100;
-  var free=num(S.cash)-pendBuyCost();
-  var room=free-reserve;
-  if(room>=8) return room;
-  if(!S.positions.length&&pendBuyCost()===0) return Math.max(0,free);
-  return Math.max(0,room);
-}
-function planStake(liq){
+function tradeSize(){
   var amt=num(S.base)+num(S.step)*num(S.lvl);
-  var capEq=equity()*num(S.eqCap)/100;
-  var capLiq=liq>0?liq*(num(S.liqFrac)/100):capEq;
-  return Math.min(amt,capEq,capLiq,spendable());
+  if(!(amt>=50)) amt=50;
+  return amt;
+}
+function freeCash(){return num(S.cash)-pendBuyCost();}
+function balanceCap(){return Math.max(50, equity()*num(S.eqCap)/100);}
+function planStake(liq){
+  var amt=tradeSize();
+  var room=freeCash()-equity()*num(S.reservePct)/100;
+  if(room+0.001<amt) return 0;
+  if(liq>0 && amt>liq*num(S.liqFrac)/100+0.001) return 0;
+  if(amt>balanceCap()+0.001) return 0;
+  return amt;
 }
 function failChance(r){
   if(!fx('fail')) return 0;
@@ -702,9 +711,11 @@ function failOrder(o,r,label){
 }
 function queue(o){
   o.t0=now();
-  o.due=now()+(fx('delay')?(4000+Math.random()*4000):0);
+  var wait=o.kind==='manual'?0:(fx('delay')?(4000+Math.random()*4000):0);
+  o.due=now()+wait;
   o.tries=0;
   PEND.push(o);
+  if(o.kind==='manual') setTimeout(processOrders,0);
 }
 function processOrders(){
   if(typeof fetch!=='function') return;
@@ -720,6 +731,8 @@ function fill(o){
   var r=LIVE[o.addr];
   if(o.k==='buy'){
     if(!r||S.paused||S.positions.some(function(p){return p.addr===o.addr;})||S.positions.length>=S.maxPos){dropOrder(o);return;}
+    if(!(o.stake>=50)||num(S.cash)+0.001<o.stake){dropOrder(o);return;}
+    if(r.liq>0&&o.stake>r.liq*num(S.liqFrac)/100+0.001){dropOrder(o);return;}
     var z=analyze(r);
     if(!z.eligible||z.lane!==o.lane){dropOrder(o);return;}
     if(Math.random()<failChance(r)){failOrder(o,r,'Buy');return;}
@@ -743,9 +756,11 @@ function fill(o){
 }
 function doBuy(z,planned){
   var r=z.r;
-  var stake=Math.min(num(S.cash), planned>0?planned:planStake(r.liq));
-  var floor=Math.min(8,num(S.base));
-  if(stake<floor) return false;
+  var stake=planned>=50?planned:planStake(r.liq);
+  if(stake<50||num(S.cash)+0.001<stake) return false;
+  if(num(S.cash)-stake+0.001<equity()*num(S.reservePct)/100) return false;
+  if(r.liq>0&&stake>r.liq*num(S.liqFrac)/100+0.001) return false;
+  if(stake>balanceCap()+0.001) return false;
   var q=quoteBuy(stake,r.px,r.liq,r,Math.random());
   if(!q) return false;
   S.cash-=stake;
@@ -836,8 +851,7 @@ function trade(){
     if(S.positions.some(function(p){return p.addr===a;})||pendHas(a,'buy')) continue;
     if(S.cool[a]&&S.cool[a]>now()) continue;
     var stake=planStake(z.r.liq);
-    var floor=Math.min(8,num(S.base));
-    if(stake<floor) continue;
+    if(stake<50){if(freeCash()<50) break; continue;}
     queue({k:'buy',addr:a,sym:z.r.sym,name:z.r.name,img:z.r.img,lane:z.lane,stake:stake,score:z.score});
     opened++;
   }
@@ -904,7 +918,7 @@ function posRow(p){
   var v=posView(p);
   var lane=p.lane==='swing'?'swing':'scalp';
   var selling=pendHas(p.addr,'sell')?'<span style="color:#FF9F0A">Selling… </span>':'';
-  return '<div class="row" data-a="'+esc(p.addr)+'"><div class="av">'+logo(p.img,p.sym)+'</div><div class="m"><div class="t1">'+esc(p.name||p.sym)+'<span class="lane '+lane+'">'+(lane==='scalp'?'SCALP':'SWING')+'</span></div><div class="t2">'+esc(p.sym)+' · '+selling+'buy '+price(p.entry)+'</div><div class="t3">sell now '+price(v.exit)+'</div></div><div class="rt"><div class="a '+cls(v.pnl)+'">'+money(v.pnl,true)+'</div><div class="b '+cls(v.ret)+'">'+pct(v.ret)+'</div>'+closeBtn(p.addr)+'</div></div>';
+  return '<div class="row trade" data-a="'+esc(p.addr)+'"><div class="av">'+logo(p.img,p.sym)+'</div><div class="m"><div class="t1">'+esc(p.name||p.sym)+'<span class="lane '+lane+'">'+(lane==='scalp'?'SCALP':'SWING')+'</span></div><div class="t2">'+esc(p.sym)+' · '+selling+'buy '+price(p.entry)+'</div><div class="t3">sell now '+price(v.exit)+'</div></div><div class="rt"><div class="nums"><div class="a '+cls(v.pnl)+'">'+money(v.pnl,true)+'</div><div class="b '+cls(v.ret)+'">'+pct(v.ret)+'</div></div>'+closeBtn(p.addr)+'</div></div>';
 }
 function feedRow(e){
   if(e.type==='fail') return '<div class="row" data-a="'+esc(e.addr||'')+'"><div class="av">'+logo(e.img,e.sym)+'</div><div class="m"><div class="t1">'+esc(e.txt||'Failed')+'</div><div class="t2">'+esc(e.sym)+' · network fee · '+clock(e.t)+'</div></div><div class="rt"><div class="a neg">'+money(e.amt,true)+'</div></div></div>';
@@ -917,8 +931,8 @@ function tokRow(r,extra){
   return '<div class="row" data-a="'+esc(r.addr)+'"><div class="av">'+logo(r.img,r.sym)+'</div><div class="m"><div class="t1">'+esc(r.name||r.sym)+'</div><div class="t2">'+esc(r.sym)+' · '+cap(r.mc)+' · '+cap(r.liq)+' liq'+(extra?' · '+extra:'')+'</div></div><div class="rt"><div class="a">'+price(r.px)+'</div><div class="b '+(c==null?'dim':cls(c))+'">'+(c==null?'—':pct(c))+'</div></div></div>';
 }
 function stratBlurb(){
-  var next=money(planStake(40000));
-  return 'Scalp: dip '+S.scalpLo+'–'+S.scalpHi+'% while the hour is up, target +'+S.scalpTp+'%, stop -'+S.scalpSl+'%, out by '+S.scalpHold+'m. Swing: dip '+S.swingLo+'–'+S.swingHi+'%, target +'+S.swingTp+'%, stop -'+S.swingSl+'%. Next buy about '+next+' (base '+money(S.base)+' + '+money(S.step)+' × '+S.lvl+' wins), max '+S.maxPos+' open, each trade capped at '+S.eqCap+'% of the balance and '+S.liqFrac+'% of the pool. Pool fee is charged on top. Extra app fee '+num(S.extraFee).toFixed(2)+'% a side.';
+  var next=tradeSize();
+  return 'Scalp: dip '+S.scalpLo+'–'+S.scalpHi+'% while the hour is up, target +'+S.scalpTp+'%, stop -'+S.scalpSl+'%, out by '+S.scalpHold+'m. Swing: dip '+S.swingLo+'–'+S.swingHi+'%, target +'+S.swingTp+'%, stop -'+S.swingSl+'%. Next buy '+money(next)+' (minimum $50, first buy '+money(Math.max(50,S.base))+', +'+money(S.step)+' after each win, back to the first buy after a loss). Up to '+S.maxPos+' open. A buy is skipped, not shrunk, if free cash is under '+money(next)+', or if that size is over '+S.liqFrac+'% of the pool or '+S.eqCap+'% of the balance. Extra app fee '+num(S.extraFee).toFixed(2)+'% a side.';
 }
 function drawChart(){
   var box=$('chart'); if(!box) return;
@@ -967,7 +981,7 @@ function renderAgents(){
   }else ana+='<div class="dim" style="margin-top:12px;font-size:12.5px">Waiting for prices…</div>';
   ana+='</div>';
   var pq=PEND[0];
-  var exe='<div class="ag"><div class="h"><div class="ai" style="background:rgba(155,107,255,.16);color:#9B6BFF">▣</div><div><div class="an">Executor</div><div class="as" style="color:#9B6BFF">'+S.buys+' buys · next '+money(planStake(40000))+'</div></div></div>';
+  var exe='<div class="ag"><div class="h"><div class="ai" style="background:rgba(155,107,255,.16);color:#9B6BFF">▣</div><div><div class="an">Executor</div><div class="as" style="color:#9B6BFF">'+S.buys+' buys · next '+money(tradeSize())+'</div></div></div>';
   if(S.paused) exe+='<div class="dim" style="margin-top:12px">Buying paused</div>';
   else if(pq) exe+='<div class="srow">'+logo(pq.img,pq.sym)+'<span>'+(pq.k==='buy'?'Buying ':'Selling ')+esc(pq.sym)+'</span></div><div class="dim" style="font-size:12px;margin-top:6px">Lands in '+Math.max(0,Math.ceil((pq.due-now())/1000))+'s</div>';
   else exe+='<div class="dim" style="margin-top:12px;font-size:12.5px">'+(S.streak?S.streak+' win'+(S.streak===1?'':'s')+' in a row':'Waiting for a setup')+'</div>';
