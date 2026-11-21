@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Paper Bot Pro</title>
-<meta name="app-version" content="PAPERBOT-PRO-20261121-go">
+<meta name="app-version" content="PAPERBOT-PRO-20261121-go2">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -220,7 +220,7 @@ a{color:var(--blue);text-decoration:none}
 <script>
 (function(){
 'use strict';
-var VERSION='PAPERBOT-PRO-20261121-go';
+var VERSION='PAPERBOT-PRO-20261121-go2';
 var API='https://api.dexscreener.com';
 var LOC=(typeof location!=='undefined')?location:{search:'',pathname:'/pro/',replace:function(){}};
 var DOC=(typeof document!=='undefined')?document:null;
@@ -566,6 +566,13 @@ function holderVerdict(h,r){
   }
   return {wait:false,block:false,note:tops[0]?('top wallet '+tops[0].pct.toFixed(1)+'%'):'no holder list'};
 }
+function hardStop(r){
+  if(!r||r.liq<num(S.minLiqScalp)*0.7) return 'liquidity dropped';
+  if(fx('copy')&&isCopy(r)) return 'copycat name';
+  var h=holderCall(r);
+  if(h.block&&/mint|freeze|rugged|tax/i.test(h.note||'')) return h.note;
+  return '';
+}
 function holderCall(r){
   if(!fx('holders')) return {wait:false,block:false,note:'holder check off'};
   var h=RC[r.addr];
@@ -777,11 +784,10 @@ function fill(o){
     if(!r||S.paused||S.positions.some(function(p){return p.addr===o.addr;})||S.positions.length>=S.maxPos){dropOrder(o);return;}
     if(!(o.stake>=50)||num(S.cash)+0.001<o.stake){dropOrder(o);return;}
     if(r.liq>0&&o.stake>r.liq*num(S.liqFrac)/100+0.001){dropOrder(o);return;}
-    var z=analyze(r);
-    if(!z.eligible||z.lane!==o.lane){dropOrder(o);return;}
+    if(hardStop(r)){dropOrder(o);return;}
     if(Math.random()<failChance(r)){failOrder(o,r,'Buy');return;}
     dropOrder(o);
-    doBuy(z,o.stake);
+    doBuy({r:r,lane:o.lane||'scalp'},o.stake);
   }else{
     var p=S.positions.filter(function(q){return q.addr===o.addr;})[0];
     if(!p){dropOrder(o);return;}
@@ -1327,6 +1333,7 @@ var APIEXP={
   normName:normName, sameName:sameName, isCopy:isCopy, dipInfo:dipInfo, analyze:analyze, holderVerdict:holderVerdict,
   planStake:planStake, equity:equity, defaults:defaults, trailLine:trailLine, exitPlan:exitPlan,
   poll:poll, trade:trade, processOrders:processOrders, skipBucket:skipBucket,
+  get PEND(){return PEND;}, get ST(){return ST;},
   get S(){return S;}, setS:function(n){S=n;}, get LIVE(){return LIVE;}, get RC(){return RC;}
 };
 if(typeof globalThis!=='undefined') globalThis.__pbp=APIEXP;
