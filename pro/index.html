@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Paper Bot Pro</title>
-<meta name="app-version" content="PAPERBOT-PRO-20261121-50">
+<meta name="app-version" content="PAPERBOT-PRO-20261121-ride">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -84,6 +84,7 @@ a{color:var(--blue);text-decoration:none}
 .row .nums{text-align:right}
 .row .rt .a{font-size:16px;font-weight:700}
 .row .rt .b{font-size:12.5px;margin-top:2px}
+.ride{color:var(--cyan);font-weight:750}
 .lane{font-size:9px;font-weight:800;letter-spacing:.06em;padding:1px 5px;border-radius:5px;margin-left:6px;vertical-align:1px}
 .lane.scalp{color:var(--cyan);background:rgba(50,212,232,.14)}
 .lane.swing{color:var(--yellow);background:rgba(255,214,10,.14)}
@@ -210,7 +211,7 @@ a{color:var(--blue);text-decoration:none}
   <input id="startAmt" type="number" inputmode="decimal" min="1" step="1">
   <button class="btn blue" id="applyStart" type="button">Restart with this amount</button>
   <button class="btn danger" id="resetBtn" type="button">Reset to $300</button>
-  <div class="note warn"><b>Why these defaults.</b> Every buy is at least $50, then +$5 after a win, and back to $50 after a loss. The bot never shrinks a buy to fit. If free cash is under the full size, or the size is more than 1% of the pool, that buy is skipped. Five $50 trades fit in a $300 balance, so cash kept back starts at 0% and the balance cap starts at 50% (a $50 buy is about 17% of $300). A +15% scalp still has to clear pool fees. A +48% target after a 40–50% crash usually does not. Set "extra app fee" if the phone app you copy charges one.</div>
+  <div class="note warn"><b>Why these defaults.</b> Every buy is at least $50, then +$5 after a win, and back to $50 after a loss. The bot never shrinks a buy to fit. There is no fixed take-profit. At +15% a trade starts riding the peak and sells only when momentum fades: the tighter of a 9-point giveback or one third of the peak, and never gives the locked +5% back on purpose. A sharp red 5-minute candle or sellers taking over also exits. Stops stay at -8% for scalps and -20% for swings. Set "extra app fee" if the phone app you copy charges one.</div>
   <div class="note"><b>What this cannot make realistic.</b> Prices are DexScreener quotes a few seconds old, so a wick between checks is invisible. There is no private mempool, no sandwich bot racing you, and no true on-chain stop that fills at the trigger price. Honeypots are only caught when RugCheck flags mint, freeze, or a tax. Holder data is missing when RugCheck does not answer, and those coins are not blocked. The dip uses the high this app has seen plus the 5 minute, 1 hour, 6 hour, and 1 day moves, not every candle. The app only trades while this page is open. Nothing here is financial advice.</div>
   <div class="note"><b>Where coins come from.</b> DexScreener's public Solana boost and new-token lists, the same sources as the other simulator. Fomo does not publish its list. This app never reads or writes the other app's saved balance.</div>
   <div class="foot" id="ver"></div>
@@ -218,7 +219,7 @@ a{color:var(--blue);text-decoration:none}
 <script>
 (function(){
 'use strict';
-var VERSION='PAPERBOT-PRO-20261121-50';
+var VERSION='PAPERBOT-PRO-20261121-ride';
 var API='https://api.dexscreener.com';
 var LOC=(typeof location!=='undefined')?location:{search:'',pathname:'/pro/',replace:function(){}};
 var DOC=(typeof document!=='undefined')?document:null;
@@ -252,13 +253,16 @@ var FIELDS=[
   ['eqCap','Skip if over this % of balance',20,80],
   ['scalpLo','Scalp dip from (%)',3,35],
   ['scalpHi','Scalp dip to (%)',8,45],
-  ['scalpTp','Scalp take profit (%)',8,80],
   ['scalpSl','Scalp stop (%)',4,25],
-  ['scalpHold','Scalp time stop (min)',8,90],
+  ['scalpHold','Time stop if not in profit (min)',8,90],
   ['swingLo','Swing dip from (%)',25,70],
   ['swingHi','Swing dip to (%)',35,80],
-  ['swingTp','Swing take profit (%)',20,120],
   ['swingSl','Swing stop (%)',8,40],
+  ['armPct','Start riding at +%',8,40],
+  ['trailGive','Max giveback from the peak (points)',4,25],
+  ['trailFrac','Or this fraction of the peak gain',0.2,0.6],
+  ['lockPct','After riding, lock in at least +%',0,20],
+  ['flipRed','Sell if the 5m candle is this red',4,25],
   ['minMcScalp','Scalp min market cap ($)',5000,250000],
   ['minLiqScalp','Scalp min liquidity ($)',8000,250000],
   ['minMc','Swing min high market cap ($)',8000,250000],
@@ -273,11 +277,12 @@ var FIELDS=[
 function defaults(start){
   start=start||300;
   return {
-    v:1,rules:2,start:start,cash:start,
+    v:1,rules:3,start:start,cash:start,
     base:50,step:5,lvl:0,streak:0,maxPos:5,reservePct:0,liqFrac:1,eqCap:50,
     scalpOn:true,swingOn:true,
-    scalpLo:4,scalpHi:22,scalpTp:15,scalpSl:8,scalpHold:18,
-    swingLo:40,swingHi:50,swingTp:48,swingSl:20,
+    scalpLo:4,scalpHi:22,scalpSl:8,scalpHold:18,
+    swingLo:40,swingHi:50,swingSl:20,
+    armPct:15,trailGive:9,trailFrac:0.33,lockPct:5,flipRed:8,
     minMcScalp:20000,minLiqScalp:25000,minMc:15000,minLiqSwing:22000,
     topWallet:4,extraFee:0,netFee:0.05,minAge:12,coolMin:18,
     fx:{slip:true,pressure:true,tip:true,delay:true,gap:true,fail:true,rug:true,holders:true,copy:true},
@@ -300,7 +305,13 @@ else{
     if(num(S.base)<50)S.base=50;
     if(num(S.eqCap)<50)S.eqCap=50;
     S.reservePct=0;
-    S.rules=2;
+  }
+  if(oldRules<3){
+    var fresh=defaults();
+    ['armPct','trailGive','trailFrac','lockPct','flipRed'].forEach(function(k){
+      if(!(num(keep[k])>0)) S[k]=fresh[k];
+    });
+    S.rules=3;
   }
   if(num(S.base)<50)S.base=50;
   if(!(S.cash>=0))S.cash=S.start;
@@ -747,9 +758,10 @@ function fill(o){
     if(o.kind!=='manual'&&Math.random()<failChance(r)){failOrder(o,r,'Sell');return;}
     dropOrder(o);
     var gap=null;
-    if(fx('gap')&&o.kind==='sl'){
+    if(fx('gap')&&(o.kind==='sl'||o.kind==='trail'||o.kind==='flip')){
       var ret=(r.px/p.entry-1)*100;
-      if(ret<-p.sl-1.5) gap=Math.round(ret);
+      var line=o.kind==='sl'?-p.sl:num(o.line);
+      if(ret<line-1.5) gap=Math.round(ret);
     }
     sell(p,o.reason,o.kind,r,{gap:gap,rand:Math.random()});
   }
@@ -768,8 +780,7 @@ function doBuy(z,planned){
   S.positions.push({
     addr:r.addr,sym:r.sym,name:r.name,img:r.img,pair:r.pair,dex:r.dex,
     entry:q.fill,refPx:r.px,lastPx:r.px,tokens:q.tokens,stake:stake,
-    feesIn:q.fees,slip:q.slip,liq:r.liq,lane:z.lane,
-    tp:z.lane==='swing'?S.swingTp:S.scalpTp,
+    feesIn:q.fees,slip:q.slip,    liq:r.liq,lane:z.lane,peak:0,ride:false,
     sl:z.lane==='swing'?S.swingSl:S.scalpSl,
     hold:z.lane==='scalp'?num(S.scalpHold)*60000:90*60000,
     t:now(),miss:0,tax:num(r.tax)
@@ -805,6 +816,47 @@ function closePos(addr){
   queue({k:'sell',addr:addr,sym:p.sym,name:p.name,img:p.img,reason:'Manual close',kind:'manual',stake:0});
   render(); return true;
 }
+function trailLine(peak){
+  var give=Math.min(num(S.trailGive), Math.max(0,peak)*num(S.trailFrac));
+  if(!(give>0)) give=num(S.trailGive);
+  return Math.max(num(S.lockPct), peak-give);
+}
+function momentumFlip(r){
+  if(!r) return false;
+  var n=num(r.b5)+num(r.s5);
+  var sellers=n>=8&&num(r.s5)>num(r.b5);
+  var red=r.c5!=null&&r.c5<=-num(S.flipRed);
+  return {sellers:sellers,red:red,flip:sellers||red};
+}
+function exitPlan(p,r){
+  var ret=(r.px/p.entry-1)*100;
+  var peak=Math.max(num(p.peak), ret);
+  var ride=!!(p.ride||peak>=num(S.armPct));
+  var plan={ret:ret,peak:peak,ride:ride,sell:false,kind:'',reason:'',line:null};
+  if(ret<=-num(p.sl)){
+    plan.sell=true; plan.kind='sl'; plan.reason='Stop loss'; plan.line=-num(p.sl);
+    return plan;
+  }
+  if(ride){
+    var line=trailLine(peak);
+    plan.line=line;
+    if(ret<=line){
+      plan.sell=true; plan.kind='trail'; plan.reason='Trail from peak +'+Math.round(peak)+'%';
+      return plan;
+    }
+    var flip=momentumFlip(r);
+    if(flip.flip){
+      plan.sell=true; plan.kind='flip';
+      plan.reason=flip.red?'Sharp red 5m candle':'Sellers took over';
+      return plan;
+    }
+    return plan;
+  }
+  if(ret<=0&&p.hold&&now()-p.t>=p.hold){
+    plan.sell=true; plan.kind='time'; plan.reason='Time stop';
+  }
+  return plan;
+}
 function risk(){
   S.positions.slice().forEach(function(p){
     var r=LIVE[p.addr], fresh=r&&now()-r.ts<25000;
@@ -813,12 +865,11 @@ function risk(){
     p.lastPx=r.px; if(r.img) p.img=r.img; if(r.liq) p.liq=r.liq;
     var why=rugReason(p,r);
     if(why){sell(p,'Rugged','rug',r,{rug:true,why:why,rand:Math.random()});return;}
+    var plan=exitPlan(p,r);
+    p.peak=plan.peak;
+    if(plan.ride) p.ride=true;
     if(pendHas(p.addr,'sell')) return;
-    var ret=(r.px/p.entry-1)*100;
-    if(ret>=p.tp) queue({k:'sell',addr:p.addr,sym:p.sym,name:p.name,img:p.img,reason:'Took profit',kind:'tp'});
-    else if(ret<=-p.sl) queue({k:'sell',addr:p.addr,sym:p.sym,name:p.name,img:p.img,reason:'Stop loss',kind:'sl'});
-    else if(p.lane==='scalp'&&now()-p.t>=p.hold&&ret<p.tp-3) queue({k:'sell',addr:p.addr,sym:p.sym,name:p.name,img:p.img,reason:'Time stop',kind:'time'});
-    else if(p.lane==='swing'&&now()-p.t>=p.hold&&ret<0) queue({k:'sell',addr:p.addr,sym:p.sym,name:p.name,img:p.img,reason:'Time stop',kind:'time'});
+    if(plan.sell) queue({k:'sell',addr:p.addr,sym:p.sym,name:p.name,img:p.img,reason:plan.reason,kind:plan.kind,line:plan.line});
     else if(r.liq<2000) queue({k:'sell',addr:p.addr,sym:p.sym,name:p.name,img:p.img,reason:'Pool almost empty',kind:'pool'});
   });
 }
@@ -918,12 +969,13 @@ function posRow(p){
   var v=posView(p);
   var lane=p.lane==='swing'?'swing':'scalp';
   var selling=pendHas(p.addr,'sell')?'<span style="color:#FF9F0A">Selling… </span>':'';
-  return '<div class="row trade" data-a="'+esc(p.addr)+'"><div class="av">'+logo(p.img,p.sym)+'</div><div class="m"><div class="t1">'+esc(p.name||p.sym)+'<span class="lane '+lane+'">'+(lane==='scalp'?'SCALP':'SWING')+'</span></div><div class="t2">'+esc(p.sym)+' · '+selling+'buy '+price(p.entry)+'</div><div class="t3">sell now '+price(v.exit)+'</div></div><div class="rt"><div class="nums"><div class="a '+cls(v.pnl)+'">'+money(v.pnl,true)+'</div><div class="b '+cls(v.ret)+'">'+pct(v.ret)+'</div></div>'+closeBtn(p.addr)+'</div></div>';
+  var ride=p.ride?'<div class="t3 ride">Riding · peak '+pct(p.peak)+'</div>':'';
+  return '<div class="row trade" data-a="'+esc(p.addr)+'"><div class="av">'+logo(p.img,p.sym)+'</div><div class="m"><div class="t1">'+esc(p.name||p.sym)+'<span class="lane '+lane+'">'+(lane==='scalp'?'SCALP':'SWING')+'</span></div><div class="t2">'+esc(p.sym)+' · '+selling+'buy '+price(p.entry)+'</div><div class="t3">sell now '+price(v.exit)+'</div>'+ride+'</div><div class="rt"><div class="nums"><div class="a '+cls(v.pnl)+'">'+money(v.pnl,true)+'</div><div class="b '+cls(v.ret)+'">'+pct(v.ret)+'</div></div>'+closeBtn(p.addr)+'</div></div>';
 }
 function feedRow(e){
   if(e.type==='fail') return '<div class="row" data-a="'+esc(e.addr||'')+'"><div class="av">'+logo(e.img,e.sym)+'</div><div class="m"><div class="t1">'+esc(e.txt||'Failed')+'</div><div class="t2">'+esc(e.sym)+' · network fee · '+clock(e.t)+'</div></div><div class="rt"><div class="a neg">'+money(e.amt,true)+'</div></div></div>';
   if(e.type==='buy') return '<div class="row" data-a="'+esc(e.addr)+'"><div class="av">'+logo(e.img,e.sym)+'</div><div class="m"><div class="t1">Bought '+esc(e.name||e.sym)+'</div><div class="t2">'+esc(e.sym)+' · buy '+price(e.buyPx)+' · '+clock(e.t)+'</div></div><div class="rt"><div class="a">'+money(e.amt)+'</div><div class="b dim">'+esc(e.lane||'')+'</div></div></div>';
-  var label=e.kind==='rug'?'Rugged':(e.kind==='tp'?'Took profit':(e.kind==='sl'?(e.gap?'Stop gapped to '+e.gap+'%':'Stop'):(e.kind==='time'?'Time stop':(e.kind==='manual'?'You closed':'Sold'))));
+  var label=e.kind==='rug'?'Rugged':(e.kind==='trail'?'Trail exit':(e.kind==='flip'?'Momentum flipped':(e.kind==='tp'?'Took profit':(e.kind==='sl'?(e.gap?'Stop gapped to '+e.gap+'%':'Stop'):(e.kind==='time'?'Time stop':(e.kind==='manual'?'You closed':'Sold'))))));
   return '<div class="row" data-a="'+esc(e.addr)+'"><div class="av">'+logo(e.img,e.sym)+'</div><div class="m"><div class="t1">'+esc(label)+' '+esc(e.sym)+'</div><div class="t2">buy '+price(e.buyPx)+' · sell '+price(e.sellPx)+' · '+clock(e.t)+'</div></div><div class="rt"><div class="a '+cls(e.pnl)+'">'+money(e.pnl,true)+'</div><div class="b '+cls(e.pnl)+'">'+pct(e.pct)+'</div></div></div>';
 }
 function tokRow(r,extra){
@@ -932,7 +984,7 @@ function tokRow(r,extra){
 }
 function stratBlurb(){
   var next=tradeSize();
-  return 'Scalp: dip '+S.scalpLo+'–'+S.scalpHi+'% while the hour is up, target +'+S.scalpTp+'%, stop -'+S.scalpSl+'%, out by '+S.scalpHold+'m. Swing: dip '+S.swingLo+'–'+S.swingHi+'%, target +'+S.swingTp+'%, stop -'+S.swingSl+'%. Next buy '+money(next)+' (minimum $50, first buy '+money(Math.max(50,S.base))+', +'+money(S.step)+' after each win, back to the first buy after a loss). Up to '+S.maxPos+' open. A buy is skipped, not shrunk, if free cash is under '+money(next)+', or if that size is over '+S.liqFrac+'% of the pool or '+S.eqCap+'% of the balance. Extra app fee '+num(S.extraFee).toFixed(2)+'% a side.';
+  return 'No fixed take-profit. At +'+S.armPct+'% a trade starts Riding and follows the peak. It sells on the tighter of a '+S.trailGive+'-point giveback or '+Math.round(S.trailFrac*100)+'% of that peak, and it will not give back through +'+S.lockPct+'% on purpose. It also sells if sellers take over or the 5-minute candle is -'+S.flipRed+'% or worse. Stops stay -'+S.scalpSl+'% (scalp) and -'+S.swingSl+'% (swing). The '+S.scalpHold+'m clock only closes a trade that is not yet in profit. Next buy '+money(next)+' (minimum $50). Up to '+S.maxPos+' open.';
 }
 function drawChart(){
   var box=$('chart'); if(!box) return;
@@ -986,7 +1038,8 @@ function renderAgents(){
   else if(pq) exe+='<div class="srow">'+logo(pq.img,pq.sym)+'<span>'+(pq.k==='buy'?'Buying ':'Selling ')+esc(pq.sym)+'</span></div><div class="dim" style="font-size:12px;margin-top:6px">Lands in '+Math.max(0,Math.ceil((pq.due-now())/1000))+'s</div>';
   else exe+='<div class="dim" style="margin-top:12px;font-size:12.5px">'+(S.streak?S.streak+' win'+(S.streak===1?'':'s')+' in a row':'Waiting for a setup')+'</div>';
   exe+='</div>';
-  var riskCard='<div class="ag"><div class="h"><div class="ai" style="background:rgba(255,159,10,.16)">⛨</div><div><div class="an">Risk</div><div class="as" style="color:#FF9F0A">'+S.positions.length+' open · '+(S.rugs||0)+' rugs · '+(S.fails||0)+' fails</div></div></div><div class="dim" style="margin-top:10px;font-size:12.5px;line-height:1.35">Scalp +'+S.scalpTp+' / -'+S.scalpSl+' · Swing +'+S.swingTp+' / -'+S.swingSl+'. Fees paid '+money(S.feesPaid)+'.</div></div>';
+  var riding=S.positions.filter(function(p){return p.ride;}).length;
+  var riskCard='<div class="ag"><div class="h"><div class="ai" style="background:rgba(255,159,10,.16)">⛨</div><div><div class="an">Risk</div><div class="as" style="color:#FF9F0A">'+S.positions.length+' open · '+riding+' riding</div></div></div><div class="dim" style="margin-top:10px;font-size:12.5px;line-height:1.35">Ride from +'+S.armPct+'%. Trail '+S.trailGive+' pts or 1/3 of the peak. Lock +'+S.lockPct+'%. Stops -'+S.scalpSl+' / -'+S.swingSl+'. Fees '+money(S.feesPaid)+'.</div></div>';
   setHTML(el,scan+ana+exe+riskCard);
 }
 function renderHome(){
@@ -1064,7 +1117,8 @@ function renderDetail(){
   html+='<div class="dbig">'+(r&&r.mc?cap(r.mc):price(px))+'</div>';
   if(p){
     var v=posView(p);
-    html+='<div class="card"><div class="kv"><span>Buy price</span><span>'+price(p.entry)+'</span></div><div class="kv"><span>Sell price now</span><span>'+price(v.exit)+'</span></div><div class="kv"><span>Paid</span><span>'+money(p.stake)+'</span></div><div class="kv"><span>Would get back</span><span>'+money(v.out)+'</span></div><div class="kv"><span>Profit or loss</span><span class="'+cls(v.pnl)+'">'+money(v.pnl,true)+' ('+pct(v.ret)+')</span></div><div class="kv"><span>Target / stop</span><span class="pos">+'+p.tp+'%</span> <span class="neg">-'+p.sl+'%</span></div>'+(pendHas(a,'sell')?'<button class="btn" disabled>Selling…</button>':'<button class="btn danger" type="button" data-close="'+esc(a)+'">Close this trade</button>')+'</div>';
+    var rideLine=p.ride?('<div class="kv"><span>Riding</span><span class="ride">peak '+pct(p.peak)+' · trail '+pct(trailLine(p.peak))+'</span></div>'):'<div class="kv"><span>Exit</span><span>Rides once it hits +'+S.armPct+'%</span></div>';
+    html+='<div class="card"><div class="kv"><span>Buy price</span><span>'+price(p.entry)+'</span></div><div class="kv"><span>Sell price now</span><span>'+price(v.exit)+'</span></div><div class="kv"><span>Paid</span><span>'+money(p.stake)+'</span></div><div class="kv"><span>Would get back</span><span>'+money(v.out)+'</span></div><div class="kv"><span>Profit or loss</span><span class="'+cls(v.pnl)+'">'+money(v.pnl,true)+' ('+pct(v.ret)+')</span></div>'+rideLine+'<div class="kv"><span>Stop</span><span class="neg">-'+p.sl+'%</span></div>'+(pendHas(a,'sell')?'<button class="btn" disabled>Selling…</button>':'<button class="btn danger" type="button" data-close="'+esc(a)+'">Close this trade</button>')+'</div>';
   }
   var z=SCORES.filter(function(q){return q.r.addr===a;})[0];
   if(z){
@@ -1223,7 +1277,7 @@ var APIEXP={
   VERSION:VERSION, KEY:KEY, HKEY:HKEY,
   slipPct:slipPct, poolFeePct:poolFeePct, swapFeePct:swapFeePct, quoteBuy:quoteBuy, quoteSell:quoteSell,
   normName:normName, sameName:sameName, isCopy:isCopy, dipInfo:dipInfo, analyze:analyze, holderVerdict:holderVerdict,
-  planStake:planStake, equity:equity, defaults:defaults,
+  planStake:planStake, equity:equity, defaults:defaults, trailLine:trailLine, exitPlan:exitPlan,
   get S(){return S;}, setS:function(n){S=n;}, get LIVE(){return LIVE;}, get RC(){return RC;}
 };
 if(typeof globalThis!=='undefined') globalThis.__pbp=APIEXP;
