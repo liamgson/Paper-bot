@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Paper Bot Pro</title>
-<meta name="app-version" content="PAPERBOT-PRO-20261121-ride">
+<meta name="app-version" content="PAPERBOT-PRO-20261121-go">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -151,6 +151,7 @@ a{color:var(--blue);text-decoration:none}
     <div class="big" id="big">$300.00</div>
     <div class="gain"><span id="gAmt">▲ $0.00 (0.00%)</span><span class="mult" id="gX">1.00x</span></div>
     <div class="upd" id="upd">Getting live Solana prices…</div>
+    <div class="src" id="scanLine">Last scan: starting…</div>
   </div>
   <div class="strip" id="strip"></div>
   <div class="strat" id="stratCard">
@@ -219,7 +220,7 @@ a{color:var(--blue);text-decoration:none}
 <script>
 (function(){
 'use strict';
-var VERSION='PAPERBOT-PRO-20261121-ride';
+var VERSION='PAPERBOT-PRO-20261121-go';
 var API='https://api.dexscreener.com';
 var LOC=(typeof location!=='undefined')?location:{search:'',pathname:'/pro/',replace:function(){}};
 var DOC=(typeof document!=='undefined')?document:null;
@@ -277,14 +278,14 @@ var FIELDS=[
 function defaults(start){
   start=start||300;
   return {
-    v:1,rules:3,start:start,cash:start,
+    v:1,rules:4,start:start,cash:start,
     base:50,step:5,lvl:0,streak:0,maxPos:5,reservePct:0,liqFrac:1,eqCap:50,
     scalpOn:true,swingOn:true,
     scalpLo:4,scalpHi:22,scalpSl:8,scalpHold:18,
     swingLo:40,swingHi:50,swingSl:20,
     armPct:15,trailGive:9,trailFrac:0.33,lockPct:5,flipRed:8,
-    minMcScalp:20000,minLiqScalp:25000,minMc:15000,minLiqSwing:22000,
-    topWallet:4,extraFee:0,netFee:0.05,minAge:12,coolMin:18,
+    minMcScalp:8000,minLiqScalp:15000,minMc:8000,minLiqSwing:15000,
+    topWallet:4,extraFee:0,netFee:0.05,minAge:2,coolMin:8,
     fx:{slip:true,pressure:true,tip:true,delay:true,gap:true,fail:true,rug:true,holders:true,copy:true},
     paused:false,awake:false,
     positions:[],feed:[],chart:[{t:now(),v:start}],watch:[],top:[],hi:{},
@@ -311,7 +312,15 @@ else{
     ['armPct','trailGive','trailFrac','lockPct','flipRed'].forEach(function(k){
       if(!(num(keep[k])>0)) S[k]=fresh[k];
     });
-    S.rules=3;
+  }
+  if(oldRules<4){
+    if(num(S.minLiqScalp)>15000) S.minLiqScalp=15000;
+    if(num(S.minLiqSwing)>15000) S.minLiqSwing=15000;
+    if(num(S.minMcScalp)>8000) S.minMcScalp=8000;
+    if(num(S.minMc)>8000) S.minMc=8000;
+    if(num(S.minAge)>2) S.minAge=2;
+    if(num(S.coolMin)>8) S.coolMin=8;
+    S.rules=4;
   }
   if(num(S.base)<50)S.base=50;
   if(!(S.cash>=0))S.cash=S.start;
@@ -457,38 +466,56 @@ function dipInfo(r){
   if(!isFinite(dip)||dip<0) dip=0;
   return {dip:Math.min(95,dip),highMc:num(r.mc)*hiF};
 }
-function flowOk(r){
+function buyersAhead(r){
   var m=num(r.b5)+num(r.s5), h=num(r.b1)+num(r.s1);
-  if(m>=8) return r.b5>r.s5;
-  if(h>=12) return r.b1>r.s1;
-  return false;
+  if(m>=6) return r.b5>r.s5;
+  if(h>=8) return r.b1>r.s1;
+  return m>=4 && r.b5>=r.s5;
 }
 function ageMin(r){return r.created>0?(now()-r.created)/60000:-1;}
 function analyze(r){
-  var d=dipInfo(r), checks=[], reasons=[];
-  function add(key,label,pass,note){checks.push({key:key,label:label,pass:!!pass,note:note||''}); if(!pass) reasons.push(note||label);}
+  var d=dipInfo(r), checks=[];
+  function add(key,label,pass,note){checks.push({key:key,label:label,pass:!!pass,note:note||''});}
   var ageM=ageMin(r);
-  var ageOk=ageM<0?r.liq>=S.minLiqScalp*1.3:ageM>=S.minAge;
-  var dump=r.c5!=null&&r.c5<=-12;
-  var buyers=flowOk(r);
-  var copy=isCopy(r);
-  add('age','Age',ageOk,ageM<0?'age unknown, needs deeper liquidity':age(r.created)+' old');
-  add('flow','More buyers',buyers,(num(r.b5)+num(r.s5))>=8?(r.b5+' buys / '+r.s5+' sells in 5m'):(r.b1+' / '+r.s1+' in 1h'));
+  var ageOk=ageM<0||ageM>=num(S.minAge);
+  var dump=r.c5!=null&&r.c5<=-15;
+  var buyers=buyersAhead(r);
+  var copy=fx('copy')&&isCopy(r);
+  var liqOk=r.liq>=num(S.minLiqScalp);
+  var mcOk=!(num(S.minMcScalp)>0)||r.mc>=num(S.minMcScalp);
+  var hourOk=r.c1==null||r.c1>=-8;
+  var fiveOk=r.c5==null||r.c5>-12;
+  var momentum=hourOk&&fiveOk&&buyers;
+  var pull=d.dip>=1&&d.dip<=35&&fiveOk&&buyers;
+  var deep=S.swingOn&&d.dip>=num(S.swingLo)&&d.dip<=Math.max(num(S.swingHi),60)&&buyers&&!dump&&liqOk&&r.liq>=num(S.minLiqSwing)&&d.highMc>=num(S.minMc);
+  var lane=null;
+  if(copy||!ageOk||!liqOk||!mcOk||dump) lane=null;
+  else if(deep) lane='swing';
+  else if(S.scalpOn&&(momentum||pull)) lane='scalp';
+  add('liq','Liquidity',liqOk,cap(r.liq));
+  add('flow','More buyers',buyers,(num(r.b5)+num(r.s5))>=6?(r.b5+' buys / '+r.s5+' sells in 5m'):(r.b1+' / '+r.s1+' in 1h'));
   add('dump','No dump candle',!dump,'5m '+(r.c5==null?'?':pct(r.c5)));
   add('copy','Not a copycat',!copy,copy?'name already used by a larger coin':'name is clear');
-  var scalp=S.scalpOn && d.dip>=S.scalpLo && d.dip<=S.scalpHi && r.c1!=null && r.c1>=5 && (r.c5==null||r.c5>-8) && !dump && buyers && !copy && ageOk && r.liq>=S.minLiqScalp && r.mc>=S.minMcScalp;
-  var swing=S.swingOn && d.dip>=S.swingLo && d.dip<=S.swingHi && (r.c5==null||r.c5>-6) && !dump && buyers && !copy && ageOk && r.liq>=S.minLiqSwing && d.highMc>=S.minMc;
-  var lane=scalp?'scalp':(swing?'swing':null);
-  if(lane==='scalp') add('dip','Dip',true,Math.round(d.dip)+'% off the high, hour still up');
-  else if(lane==='swing') add('dip','Dip',true,Math.round(d.dip)+'% off the high');
-  else add('dip','Dip',false,Math.round(d.dip)+'% off the high');
-  add('liq','Liquidity',lane==='scalp'?r.liq>=S.minLiqScalp:(lane==='swing'?r.liq>=S.minLiqSwing:false),cap(r.liq));
-  var score=checks.reduce(function(s,c){return s+(c.pass?1:0);},0)/checks.length*100;
+  add('age','Age',ageOk,ageM<0?'age unknown':age(r.created)+' old');
+  add('go','Momentum or dip',!!lane,lane==='swing'?(Math.round(d.dip)+'% dip'):(momentum?'buyers ahead while it is still trending':(pull?Math.round(d.dip)+'% pullback':'not trending')));
+  var score=checks.reduce(function(s,c){return s+(c.pass?1:0);},0)/Math.max(1,checks.length)*100;
   var h=holderCall(r);
-  var blocked=h.block;
-  var eligible=!!lane && !blocked && !h.wait;
-  var reason=blocked?h.note:(h.wait?h.note:(lane?(''+lane+' setup'):(reasons[0]||'does not fit either lane')));
-  return {r:r,lane:lane,dip:d.dip,highMc:d.highMc,checks:checks,score:Math.round(score),eligible:eligible,wait:h.wait,block:blocked,holder:h.note,reason:reason,pre:!!lane&&!blocked};
+  var blocked=!!h.block;
+  var eligible=!!lane&&!blocked;
+  var reason=blocked?(h.note||'holder risk'):(lane?(lane==='swing'?'dip buy':'momentum buy'):skipBucket({r:r,block:false,holder:''}));
+  return {r:r,lane:lane,dip:d.dip,highMc:d.highMc,checks:checks,score:Math.round(score),eligible:eligible,wait:false,block:blocked,holder:h.note,reason:reason,pre:eligible};
+}
+function skipBucket(z){
+  var r=z.r||{};
+  if(num(r.liq)<num(S.minLiqScalp)) return 'liquidity under '+cap(S.minLiqScalp);
+  if(fx('copy')&&isCopy(r)) return 'copycat name';
+  if(z.block) return z.holder||'holder risk';
+  if(r.c5!=null&&r.c5<=-15) return 'dumping';
+  var ageM=ageMin(r);
+  if(ageM>=0&&ageM<num(S.minAge)) return 'too new';
+  if(num(S.minMcScalp)>0&&r.mc<num(S.minMcScalp)) return 'market cap too small';
+  if(!buyersAhead(r)) return 'more sellers than buyers';
+  return 'not trending';
 }
 function lpIds(rep){
   var s={};
@@ -509,6 +536,8 @@ function holderVerdict(h,r){
     return {wait:true,block:false,note:'checking holders'};
   }
   if(!fx('holders')) return {wait:false,block:false,note:'holder check off'};
+  if(h.mint) return {wait:false,block:true,note:'mint authority still on'};
+  if(h.freeze) return {wait:false,block:true,note:'freeze authority still on'};
   if(h.rugged) return {wait:false,block:true,note:'RugCheck says rugged'};
   if(num(h.tf)>=5) return {wait:false,block:true,note:'transfer tax '+num(h.tf).toFixed(1)+'%'};
   var risks=h.risks||[];
@@ -538,10 +567,16 @@ function holderVerdict(h,r){
   return {wait:false,block:false,note:tops[0]?('top wallet '+tops[0].pct.toFixed(1)+'%'):'no holder list'};
 }
 function holderCall(r){
-  if(!fx('holders')||RCDEAD) return {wait:false,block:false,note:RCDEAD?'holders not available':'holder check off'};
+  if(!fx('holders')) return {wait:false,block:false,note:'holder check off'};
   var h=RC[r.addr];
-  if(!h) return {wait:true,block:false,note:'checking holders'};
+  if(!h||h.pending||h.err) return {wait:false,block:false,note:'holders not in yet'};
   return holderVerdict(h,r);
+}
+function authorityOn(v){
+  if(!v) return false;
+  var s=typeof v==='string'?v:(v.address||v.owner||'');
+  if(!s||s==='11111111111111111111111111111111') return false;
+  return ADDR.test(s);
 }
 
 function getJSON(url,ms){
@@ -633,7 +668,7 @@ function rcFetch(addr){
   var h=RC[addr];
   if(h&&(h.ok||h.err)&&now()-h.t<8*60*1000) return;
   if(h&&h.pending) return;
-  if(RCIN>=2||RCDEAD) return;
+  if(RCIN>=4) return;
   RC[addr]={pending:true,t:now()}; RCIN++;
   getJSON('https://api.rugcheck.xyz/v1/tokens/'+addr+'/report',8000).then(function(j){
     var ids=lpIds(j);
@@ -642,12 +677,10 @@ function rcFetch(addr){
     }).map(function(x){return {pct:num(x.pct)};}).sort(function(a,b){return b.pct-a.pct;}).slice(0,12);
     var tf=j.transferFee&&j.transferFee.pct!=null?num(j.transferFee.pct):0;
     if(tf>0&&tf<=1) tf=tf; // already percent when the field is pct
-    RC[addr]={ok:true,t:now(),rugged:!!j.rugged,tf:tf,risks:Array.isArray(j.risks)?j.risks.slice(0,8):[],tops:tops,holders:num(j.totalHolders)};
+    RC[addr]={ok:true,t:now(),rugged:!!j.rugged,mint:authorityOn(j.mintAuthority),freeze:authorityOn(j.freezeAuthority),tf:tf,risks:Array.isArray(j.risks)?j.risks.slice(0,8):[],tops:tops,holders:num(j.totalHolders)};
     if(LIVE[addr]) LIVE[addr].tax=tf;
   }).catch(function(){
     RC[addr]={err:true,t:now()};
-    RCFAIL++;
-    if(RCFAIL>=8) RCDEAD=true;
   }).then(function(){RCIN=Math.max(0,RCIN-1);});
 }
 
@@ -887,16 +920,22 @@ function trade(){
     var la=a.lane==='scalp'?1:0, lb=b.lane==='scalp'?1:0;
     return (b.eligible-a.eligible)||(lb-la)||(b.score-a.score)||(b.r.liq-a.r.liq);
   });
-  if(fx('holders')&&!RCDEAD){
-    SCORES.filter(function(z){return z.pre;}).slice(0,5).forEach(function(z){rcFetch(z.r.addr);});
+  if(fx('holders')){
+    SCORES.filter(function(z){return z.eligible||z.lane;}).slice(0,8).forEach(function(z){rcFetch(z.r.addr);});
   }
+  var buckets={}, ready=0;
+  SCORES.forEach(function(z){
+    if(z.eligible){ready++;return;}
+    var why=skipBucket(z);
+    buckets[why]=(buckets[why]||0)+1;
+  });
+  ST.lastScan={n:SCORES.length,at:now(),buckets:buckets,ready:ready};
   if(S.paused) return;
   var opened=0;
   for(var i=0;i<SCORES.length;i++){
     var z=SCORES[i]; if(!z.eligible) continue;
     var a=z.r.addr;
-    var need=z.lane==='swing'?2:((z.r.b5>z.r.s5*1.25&&z.r.c5!=null&&z.r.c5>-4)?1:2);
-    if((PASS[a]||0)<need) continue;
+    if((PASS[a]||0)<1) continue;
     if(S.positions.length+PEND.filter(function(o){return o.k==='buy';}).length>=S.maxPos) break;
     if(opened>=2) break;
     if(S.positions.some(function(p){return p.addr===a;})||pendHas(a,'buy')) continue;
@@ -984,7 +1023,7 @@ function tokRow(r,extra){
 }
 function stratBlurb(){
   var next=tradeSize();
-  return 'No fixed take-profit. At +'+S.armPct+'% a trade starts Riding and follows the peak. It sells on the tighter of a '+S.trailGive+'-point giveback or '+Math.round(S.trailFrac*100)+'% of that peak, and it will not give back through +'+S.lockPct+'% on purpose. It also sells if sellers take over or the 5-minute candle is -'+S.flipRed+'% or worse. Stops stay -'+S.scalpSl+'% (scalp) and -'+S.swingSl+'% (swing). The '+S.scalpHold+'m clock only closes a trade that is not yet in profit. Next buy '+money(next)+' (minimum $50). Up to '+S.maxPos+' open.';
+  return 'Buys trending coins with more buyers than sellers, including small dips, when liquidity is at least '+cap(S.minLiqScalp)+'. No fixed take-profit. At +'+S.armPct+'% a trade starts Riding. It sells on the tighter of a '+S.trailGive+'-point giveback or '+Math.round(S.trailFrac*100)+'% of the peak, and will not give back through +'+S.lockPct+'% on purpose. Stops stay -'+S.scalpSl+'% (scalp) and -'+S.swingSl+'% (swing). Next buy '+money(next)+' minimum. Up to '+S.maxPos+' open.';
 }
 function drawChart(){
   var box=$('chart'); if(!box) return;
@@ -1060,6 +1099,15 @@ function renderHome(){
   if(upd){
     if(!S.lastPoll) upd.textContent=ST.ok===false?('Can’t reach prices. '+(ST.err||'')):'Getting first prices…';
     else upd.textContent='Updated '+ago(S.lastPoll)+' · scans every '+Math.round(POLL_MS/1000)+'s · open trades every '+Math.round(FAST_MS/1000)+'s';
+  }
+  var scan=$('scanLine');
+  if(scan){
+    var ls=ST.lastScan;
+    if(!ls) scan.textContent='Last scan: starting…';
+    else{
+      var parts=Object.keys(ls.buckets||{}).map(function(k){return [ls.buckets[k],k];}).sort(function(a,b){return b[0]-a[0];}).slice(0,3);
+      scan.textContent='Last scan: '+ls.n+' coins'+(ls.ready?' · '+ls.ready+' ready':'')+(parts.length?' · skipped '+parts.map(function(p){return p[0]+' '+p[1];}).join(', '):'');
+    }
   }
   drawChart();
   setHTML($('posList'), n?S.positions.map(posRow).join(''):'<div class="empty2">No open trades. Buys show up here with a Close button.</div>');
@@ -1278,6 +1326,7 @@ var APIEXP={
   slipPct:slipPct, poolFeePct:poolFeePct, swapFeePct:swapFeePct, quoteBuy:quoteBuy, quoteSell:quoteSell,
   normName:normName, sameName:sameName, isCopy:isCopy, dipInfo:dipInfo, analyze:analyze, holderVerdict:holderVerdict,
   planStake:planStake, equity:equity, defaults:defaults, trailLine:trailLine, exitPlan:exitPlan,
+  poll:poll, trade:trade, processOrders:processOrders, skipBucket:skipBucket,
   get S(){return S;}, setS:function(n){S=n;}, get LIVE(){return LIVE;}, get RC(){return RC;}
 };
 if(typeof globalThis!=='undefined') globalThis.__pbp=APIEXP;
